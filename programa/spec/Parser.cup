@@ -1,0 +1,386 @@
+// ======================================
+// Parser.cup
+//
+// @Entrada: Flujo de tokens del lexer
+// @Salida: 
+//   - Arbol de analisis sintactico.
+//   - Los errores sintacticos se reportan a compilador.ErrorReporter
+//
+// @Restricciones:
+//   - Gramatica LALR(1) sin conflictos
+//   - No se permite produccion generica
+//   - La precedencia se resuelve con la estructura de la gramatica, no con delcaraciones precedence de CUP
+//
+// @objetivo: Definir los tokens y la gramática del lenguaje de programación definido en la especificación del proyecto
+//
+// ==========================================
+
+package compilador.generated;
+
+import java_cup.runtime.*;
+import compilador.ErrorReporter;
+
+parser code {:
+    public void syntax_error(Symbol sim) {
+        ErrorReporter.sintactico("Se encontró '" + (sim.value != null ? sim.value : "?") + "'",
+        sim.right, sim.left);
+    }
+
+    public void unrecovered_syntax_error(Symbol sim) {
+        ErrorReporter.sintactico("Error no recuperable en '" + (sim.value != null ? sim.value : "?") + "'",
+        sim.right, sim.left);
+    }
+:};
+
+//  ===== Terminales =====
+
+// Lit y Identificadores
+terminal String LIT_INT, LIT_FLOAT, LIT_CHAR, LIT_STRING;
+terminal String ID;
+
+// Tipos
+terminal INT, FLOAT, BOOL, CHAR, STRING;
+
+// Reservados
+terminal VAL, READ, WRITE;
+terminal RETURN, BREAK;
+terminal IF, ELIF, ELSE, WHILE, FOR;
+terminal VOID, PRINCIPAL;
+
+// Delimitadores
+terminal OPEN_LLAVES, CLOSE_LLAVES;
+terminal OPEN_PAREN, CLOSE_PAREN;
+terminal OPEN_BRACKET, CLOSE_BRACKET;
+terminal FIN_SENTENCIA;
+terminal COMA;
+
+// Asignación
+terminal ASIGN;
+
+// Aritméticos
+terminal OP_SUMA, OP_RESTA, OP_MULT;
+terminal OP_DIV_DECIMAL, OP_DIV_ENTERA;
+terminal OP_MODULO, OP_POTENCIA;
+terminal OP_INCREMENTO, OP_DECREMENTO;
+
+// Relacionales
+terminal OP_MENOR, OP_MENOR_IGUAL;
+terminal OP_MAYOR, OP_MAYOR_IGUAL;
+terminal OP_IGUAL, OP_DIFERENTE;
+
+// Lógicos
+terminal OP_AND, OP_OR, OP_NEGACION;
+
+// Booleanos
+terminal TRUE, FALSE;
+
+// ++++++ No terminales ++++++++
+
+
+non terminal programa;
+non terminal elemento_programa_cm;
+non terminal elemento_programa;
+non terminal funcion;
+non terminal funcion_principal;
+non terminal tipo_retorno;
+non terminal lista_parametros;
+non terminal var_simple;
+non terminal var_arreglo;
+non terminal var_no_arreglo;
+non terminal tipo_arrays;
+non terminal tipo_no_arreglo;
+non terminal bloque;
+
+// Declaraciones y asignaciones
+non terminal declaracion_global;
+non terminal creacion_simple;
+non terminal creacion_asign;
+non terminal asignacion;
+non terminal creacion_arreglo;
+non terminal asignacion_arreglo;
+non terminal valores;
+non terminal valor_asignable;
+
+// Literales y accesos
+non terminal literal;
+non terminal literal_numerico;
+non terminal acceso_arreglo;
+non terminal indice;
+
+// Sentencias
+non terminal sentencia;
+non terminal lista_sentencias;
+non terminal sentencia_var;
+non terminal sentencia_expr;
+non terminal expr_incremento;
+
+// Lectura, escritura y flujo de control simple
+non terminal sent_read;
+non terminal sent_write;
+non terminal sent_return;
+non terminal sent_break;
+non terminal arg_read;
+non terminal arg_write;
+non terminal expr_retorno;
+
+// Estructuras de control
+non terminal condicion;
+non terminal sent_if;
+non terminal sent_elif;
+non terminal lista_elif;
+non terminal sent_else;
+non terminal sent_while;
+non terminal sent_for;
+
+// Expresiones Aritméticas
+non terminal expr_primaria;
+non terminal expr_negativo;
+non terminal expr_potencia;
+non terminal expr_aditiva;
+non terminal expr_multiplicativa;
+non terminal argumento_funcion;
+non terminal lista_argumentos_funcion;
+non terminal llamada_funcion;
+
+
+// Relacionales - Lógicos
+non terminal op_orden;
+non terminal op_igualdad;
+
+// operando_rel_orden y operando_rel_igualdad se unificaron en operando_rel
+// porque ambos eran expr_modulo y generaban conflictos reduce/reduce.
+non terminal operando_rel;
+
+non terminal expr_rel_orden;
+non terminal expr_rel_igualdad;
+non terminal expr_relacional;
+non terminal op_logico;
+non terminal operando_logico;
+non terminal expr_negacion;
+non terminal expr_logica;
+
+
+// Placeholder para expresiones
+non terminal expr_modulo;
+
+start with programa;
+
+// +_++++++++ Producciones ++++++++
+tipo_retorno ::= INT
+    | FLOAT
+    | CHAR
+    | BOOL;
+
+// tipo_var se separó en tipo_arrays y tipo_no_arreglo: con un solo
+// tipo_var, "val int" generaba conflicto reduce/reduce contra tipo_arrays.
+tipo_arrays ::= INT
+    | FLOAT;
+
+tipo_no_arreglo ::= BOOL
+    | STRING
+    | CHAR;
+
+var_arreglo ::= tipo_arrays ID;
+
+var_no_arreglo ::= tipo_no_arreglo ID;
+
+var_simple ::= var_arreglo
+    | var_no_arreglo;
+
+lista_parametros ::= var_simple COMA lista_parametros
+    | var_simple;
+
+bloque ::= OPEN_LLAVES lista_sentencias CLOSE_LLAVES
+    | OPEN_LLAVES error CLOSE_LLAVES;
+
+funcion ::= tipo_retorno ID OPEN_PAREN lista_parametros CLOSE_PAREN bloque
+    | tipo_retorno ID OPEN_PAREN CLOSE_PAREN bloque;
+
+funcion_principal ::= VOID PRINCIPAL OPEN_PAREN CLOSE_PAREN bloque;
+
+declaracion_global ::= creacion_simple
+    | creacion_asign
+    | creacion_arreglo;
+
+elemento_programa ::= declaracion_global
+    | funcion;
+
+elemento_programa_cm ::= elemento_programa_cm elemento_programa
+    | ;
+
+programa ::= elemento_programa_cm funcion_principal;
+
+expr_retorno ::= expr_modulo
+    | expr_relacional
+    | expr_logica;
+
+expr_modulo ::= expr_modulo OP_MODULO expr_multiplicativa
+    | expr_multiplicativa;
+
+expr_multiplicativa ::= expr_multiplicativa OP_MULT expr_aditiva
+    | expr_multiplicativa OP_DIV_DECIMAL expr_aditiva
+    | expr_multiplicativa OP_DIV_ENTERA expr_aditiva
+    | expr_aditiva;
+
+expr_aditiva ::= expr_aditiva  OP_SUMA expr_potencia
+    | expr_aditiva  OP_RESTA expr_potencia
+    | expr_potencia;
+
+expr_potencia ::= expr_negativo OP_POTENCIA expr_potencia
+    | expr_negativo;
+
+expr_negativo ::= OP_RESTA literal_numerico
+    | expr_primaria;
+
+expr_primaria ::= literal
+    | ID
+    | acceso_arreglo
+    | llamada_funcion
+    | expr_incremento
+    | OPEN_PAREN expr_modulo CLOSE_PAREN;
+
+
+literal_numerico ::= LIT_INT
+    | LIT_FLOAT;
+
+argumento_funcion ::= expr_modulo;
+
+lista_argumentos_funcion ::= argumento_funcion COMA lista_argumentos_funcion
+    | argumento_funcion;
+
+llamada_funcion ::= ID OPEN_PAREN lista_argumentos_funcion CLOSE_PAREN
+    | ID OPEN_PAREN CLOSE_PAREN;
+
+literal ::= literal_numerico
+    | LIT_CHAR
+    | LIT_STRING
+    | TRUE
+    | FALSE;
+
+indice ::= expr_modulo;
+
+acceso_arreglo ::= ID OPEN_BRACKET indice CLOSE_BRACKET;
+
+valor_asignable ::= expr_modulo
+    | expr_relacional
+    | expr_logica;
+
+creacion_simple ::= VAL var_arreglo FIN_SENTENCIA
+    | VAL var_no_arreglo FIN_SENTENCIA;
+
+creacion_asign ::= VAL var_arreglo ASIGN valor_asignable FIN_SENTENCIA
+    | VAL var_no_arreglo ASIGN valor_asignable FIN_SENTENCIA;
+
+asignacion ::= ID ASIGN valor_asignable FIN_SENTENCIA;
+
+creacion_arreglo ::= VAL var_arreglo ASIGN OPEN_LLAVES valores CLOSE_LLAVES FIN_SENTENCIA;
+
+asignacion_arreglo ::= acceso_arreglo ASIGN valor_asignable FIN_SENTENCIA;
+
+valores ::= literal_numerico COMA valores
+    | literal_numerico;
+
+sentencia_expr ::= valor_asignable FIN_SENTENCIA;
+
+expr_incremento ::= ID OP_INCREMENTO
+    | ID OP_DECREMENTO;
+
+arg_read ::= ID;
+
+arg_write ::= LIT_STRING
+    | LIT_CHAR
+    | LIT_INT
+    | LIT_FLOAT
+    | TRUE
+    | FALSE
+    | ID
+    | acceso_arreglo;
+
+sent_read ::= READ OPEN_PAREN arg_read CLOSE_PAREN FIN_SENTENCIA;
+
+sent_write ::= WRITE OPEN_PAREN arg_write CLOSE_PAREN FIN_SENTENCIA;
+
+sent_return ::= RETURN expr_retorno FIN_SENTENCIA
+    | RETURN FIN_SENTENCIA;
+
+sent_break ::= BREAK FIN_SENTENCIA;
+
+sentencia_var ::= creacion_simple
+    | creacion_asign
+    | asignacion
+    | creacion_arreglo
+    | asignacion_arreglo
+    | sentencia_expr;
+
+sentencia ::= sentencia_var
+    | sent_return
+    | sent_break
+    | sent_read
+    | sent_write
+    | sent_if
+    | sent_while
+    | sent_for;
+
+lista_sentencias ::= sentencia lista_sentencias
+    | error FIN_SENTENCIA lista_sentencias
+    | ;
+
+op_orden ::= OP_MAYOR
+    | OP_MENOR
+    | OP_MAYOR_IGUAL
+    | OP_MENOR_IGUAL;
+
+op_igualdad ::= OP_IGUAL
+    | OP_DIFERENTE;
+
+
+// Unificado desde operando_rel_orden y operando_rel_igualdad
+// para eliminar conflictos reduce/reduce.
+operando_rel ::= expr_modulo;
+
+expr_rel_orden ::= OPEN_BRACKET operando_rel CLOSE_BRACKET op_orden OPEN_BRACKET operando_rel CLOSE_BRACKET;
+
+expr_rel_igualdad ::= OPEN_BRACKET operando_rel CLOSE_BRACKET op_igualdad OPEN_BRACKET operando_rel CLOSE_BRACKET;
+
+expr_relacional ::= expr_rel_orden
+    | expr_rel_igualdad;
+
+op_logico ::= OP_AND
+    | OP_OR;
+
+operando_logico ::= expr_relacional
+    | expr_negacion
+    | TRUE
+    | FALSE
+    | ID
+    | llamada_funcion;
+
+expr_negacion ::= OP_NEGACION OPEN_PAREN operando_logico CLOSE_PAREN;
+
+// El primer operando usa expr_modulo en vez de operando_logico
+// para evitar conflictos reduce/reduce con los paréntesis.
+expr_logica ::= OPEN_PAREN expr_relacional CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
+    | OPEN_PAREN expr_negacion CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
+    | OPEN_PAREN expr_modulo CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
+    | expr_negacion;
+
+condicion ::= OPEN_PAREN expr_relacional CLOSE_PAREN
+    | OPEN_PAREN expr_logica CLOSE_PAREN
+    | OPEN_PAREN TRUE CLOSE_PAREN
+    | OPEN_PAREN FALSE CLOSE_PAREN
+    | OPEN_PAREN ID CLOSE_PAREN
+    | OPEN_PAREN llamada_funcion CLOSE_PAREN;
+
+sent_elif ::= ELIF condicion bloque;
+
+lista_elif ::= lista_elif sent_elif
+    | ;
+
+sent_else ::= ELSE bloque;
+
+sent_if ::= IF condicion bloque lista_elif sent_else
+    | IF condicion bloque lista_elif;
+
+sent_while ::= WHILE condicion bloque;
+
+sent_for ::= FOR sentencia_var condicion FIN_SENTENCIA expr_incremento bloque;

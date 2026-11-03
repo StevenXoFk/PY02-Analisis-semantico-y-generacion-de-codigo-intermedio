@@ -1,0 +1,12 @@
+# Compilados y generados
+programa/bin/
+programa/src/compilador/generated/
+*.class
+*~
+
+# Editores y sistema
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

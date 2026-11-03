@@ -1,0 +1,8 @@
+void principal є: :э ¿:
+    @
+    val int x Ͱ 5 »
+    val string s Ͱ "sin cerrar »
+    val char c Ͱ '' »
+    val float f Ͱ 3.4.5 »
+    #
+:?

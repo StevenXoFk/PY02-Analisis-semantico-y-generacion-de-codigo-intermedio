@@ -1,0 +1,32 @@
+Linea   Columna   Token                    Lexema                             Tabla               Info                          
+1       1         VOID                     void                               Reservadas                                        
+1       6         PRINCIPAL                principal                          Reservadas                                        
+1       16        OPEN_PAREN               є:                                 ninguna                                           
+1       19        CLOSE_PAREN              :э                                 ninguna                                           
+1       22        OPEN_LLAVES              ¿:                                 ninguna                                           
+3       5         VAL                      val                                Reservadas                                        
+3       9         INT                      int                                Reservadas                                        
+3       13        ID                       x                                  Identificadores                                   
+3       15        ASIGN                    Ͱ                                  ninguna                                           
+3       17        LIT_INT                  5                                  Constantes          valor=5, tipo=int             
+3       19        FIN_SENTENCIA            »                                  ninguna                                           
+4       5         VAL                      val                                Reservadas                                        
+4       9         STRING                   string                             Reservadas                                        
+4       16        ID                       s                                  Identificadores                                   
+4       18        ASIGN                    Ͱ                                  ninguna                                           
+4       21        ID                       sin                                Identificadores                                   
+4       25        ID                       cerrar                             Identificadores                                   
+4       32        FIN_SENTENCIA            »                                  ninguna                                           
+5       5         VAL                      val                                Reservadas                                        
+5       9         CHAR                     char                               Reservadas                                        
+5       14        ID                       c                                  Identificadores                                   
+5       16        ASIGN                    Ͱ                                  ninguna                                           
+5       21        FIN_SENTENCIA            »                                  ninguna                                           
+6       5         VAL                      val                                Reservadas                                        
+6       9         FLOAT                    float                              Reservadas                                        
+6       15        ID                       f                                  Identificadores                                   
+6       17        ASIGN                    Ͱ                                  ninguna                                           
+6       19        LIT_FLOAT                3.4                                Constantes          valor=3.4, tipo=float         
+6       23        LIT_INT                  5                                  Constantes          valor=5, tipo=int             
+6       25        FIN_SENTENCIA            »                                  ninguna                                           
+8       1         CLOSE_LLAVES             :?                                 ninguna                                           

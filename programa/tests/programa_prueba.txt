@@ -1,0 +1,275 @@
+| ============================================================
+| Sistema de gestión de notas
+| Programa de prueba: ejercita toda la sintaxis del lenguaje
+| ============================================================
+
+¡ Este programa simula un sistema de notas de estudiantes.
+   No se ejecuta realmente: solo se analiza léxica y
+   sintácticamente. !
+
+| -------- Constantes globales --------
+val int MAX_ESTUDIANTES Ͱ 5 »
+val float NOTA_MINIMA Ͱ 70.0 »
+val float NOTA_MAXIMA Ͱ 100.0 »
+val char OPCION_SALIR Ͱ 'q' »
+val string TITULO Ͱ "Sistema de Notas" »
+val bool MODO_DEBUG Ͱ false »
+
+| -------- Datos globales --------
+val float notas Ͱ ¿: 0.0, 0.0, 0.0, 0.0, 0.0 :? »
+val int cantidad Ͱ 0 »
+
+| -------- Funciones auxiliares --------
+
+| Calcula el promedio de las notas
+float calcular_promedio є: int n :э ¿:
+    val float suma Ͱ 0.0 »
+    val int i Ͱ 0 »
+    while є: ʃ: i :ʅ < ʃ: n :ʅ :э ¿:
+        suma Ͱ suma + notas ʃ: i :ʅ »
+        i++ »
+    :?
+    if є: ʃ: n :ʅ == ʃ: 0 :ʅ :э ¿:
+        return 0.0 »
+    :?
+    return suma / n »
+:?
+
+| Encuentra la nota más alta
+float nota_maxima є: int n :э ¿:
+    val float mayor Ͱ 0.0 »
+    val int i Ͱ 0 »
+    while є: ʃ: i :ʅ < ʃ: n :ʅ :э ¿:
+        if є: ʃ: notas ʃ: i :ʅ :ʅ > ʃ: mayor :ʅ :э ¿:
+            mayor Ͱ notas ʃ: i :ʅ »
+        :?
+        i++ »
+    :?
+    return mayor »
+:?
+
+| Encuentra la nota más baja
+float nota_minima є: int n :э ¿:
+    val float menor Ͱ NOTA_MAXIMA »
+    val int i Ͱ 0 »
+    while є: ʃ: i :ʅ < ʃ: n :ʅ :э ¿:
+        if є: ʃ: notas ʃ: i :ʅ :ʅ < ʃ: menor :ʅ :э ¿:
+            menor Ͱ notas ʃ: i :ʅ »
+        :?
+        i++ »
+    :?
+    return menor »
+:?
+
+| Cuenta cuántas notas aprobaron
+int contar_aprobados є: int n :э ¿:
+    val int aprobados Ͱ 0 »
+    val int i Ͱ 0 »
+    while є: ʃ: i :ʅ < ʃ: n :ʅ :э ¿:
+        if є: ʃ: notas ʃ: i :ʅ :ʅ >= ʃ: NOTA_MINIMA :ʅ :э ¿:
+            aprobados++ »
+        :?
+        i++ »
+    :?
+    return aprobados »
+:?
+
+| Verifica si un estudiante aprobó
+bool aprobo є: int indice :э ¿:
+    return ʃ: notas ʃ: indice :ʅ :ʅ >= ʃ: NOTA_MINIMA :ʅ »
+:?
+
+| Verifica si un estudiante es excelente
+bool es_excelente є: int indice :э ¿:
+    return є: ʃ: notas ʃ: indice :ʅ :ʅ >= ʃ: 90.0 :ʅ :э λ є: ʃ: notas ʃ: indice :ʅ :ʅ <= ʃ: NOTA_MAXIMA :ʅ :э »
+:?
+
+| Verifica si un estudiante está en riesgo
+bool en_riesgo є: int indice :э ¿:
+    return є: ʃ: notas ʃ: indice :ʅ :ʅ < ʃ: 60.0 :ʅ :э θ є: ʃ: notas ʃ: indice :ʅ :ʅ == ʃ: 0.0 :ʅ :э »
+:?
+
+| Verifica si no hay estudiantes registrados
+bool sin_registros є: :э ¿:
+    return Σ є: ʃ: cantidad :ʅ > ʃ: 0 :ʅ :э »
+:?
+
+| Verifica si un índice es válido
+bool indice_valido є: int i :э ¿:
+    return є: ʃ: i :ʅ >= ʃ: 0 :ʅ :э λ є: ʃ: i :ʅ < ʃ: cantidad :ʅ :э »
+:?
+
+| -------- Funciones de presentación --------
+
+| Muestra el menú
+int mostrar_menu є: :э ¿:
+    write є: "==============================" :э »
+    write є: TITULO :э »
+    write є: "==============================" :э »
+    write є: "1. Registrar nota" :э »
+    write є: "2. Ver todas las notas" :э »
+    write є: "3. Calcular promedio" :э »
+    write є: "4. Ver nota más alta" :э »
+    write є: "5. Ver nota más baja" :э »
+    write є: "6. Contar aprobados" :э »
+    write є: "7. Ver estado de un estudiante" :э »
+    write є: "q. Salir" :э »
+    write є: "==============================" :э »
+    return 0 »
+:?
+
+| Muestra todas las notas
+int mostrar_notas є: int n :э ¿:
+    if є: ʃ: n :ʅ == ʃ: 0 :ʅ :э ¿:
+        write є: "No hay notas registradas." :э »
+        return »
+    :?
+    val int i Ͱ 0 »
+    while є: ʃ: i :ʅ < ʃ: n :ʅ :э ¿:
+        write є: i :э »
+        write є: notas ʃ: i :ʅ :э »
+        i++ »
+    :?
+    return 0 »
+:?
+
+| Muestra el estado de un estudiante
+int mostrar_estado є: int indice :э ¿:
+    if є: aprobo є: indice :э :э ¿:
+        write є: "Aprobó" :э »
+    :? elif є: en_riesgo є: indice :э :э ¿:
+        write є: "En riesgo" :э »
+    :? else ¿:
+        write є: "Reprobó" :э »
+    :?
+
+    if є: es_excelente є: indice :э :э ¿:
+        write є: "Nota excelente" :э »
+    :?
+    return 0 »
+:?
+
+| Verifica si se puede registrar más
+bool hay_espacio є: :э ¿:
+    return ʃ: cantidad :ʅ < ʃ: MAX_ESTUDIANTES :ʅ »
+:?
+
+| -------- Programa principal --------
+void principal є: :э ¿:
+
+    val char opcion Ͱ '0' »
+    val float nota Ͱ 0.0 »
+    val int indice Ͱ 0 »
+    val bool continuar Ͱ true »
+
+    while є: continuar :э ¿:
+
+        mostrar_menu є: :э »
+
+        write є: "Elija una opción: " :э »
+        read є: opcion :э »
+
+        if є: ʃ: opcion :ʅ == ʃ: '1' :ʅ :э ¿:
+
+            | Registrar nota
+            if є: hay_espacio є: :э :э ¿:
+                write є: "Ingrese la nota: " :э »
+                read є: nota :э »
+                if є: є: ʃ: nota :ʅ >= ʃ: 0.0 :ʅ :э λ є: ʃ: nota :ʅ <= ʃ: NOTA_MAXIMA :ʅ :э :э ¿:
+                    notas ʃ: cantidad :ʅ Ͱ nota »
+                    cantidad++ »
+                    write є: "Nota registrada." :э »
+                :? else ¿:
+                    write є: "Nota fuera de rango." :э »
+                :?
+            :? else ¿:
+                write є: "No hay espacio para más notas." :э »
+            :?
+
+        :? elif є: ʃ: opcion :ʅ == ʃ: '2' :ʅ :э ¿:
+
+            | Ver todas las notas
+            mostrar_notas є: cantidad :э »
+
+        :? elif є: ʃ: opcion :ʅ == ʃ: '3' :ʅ :э ¿:
+
+            | Calcular promedio
+            if є: sin_registros є: :э :э ¿:
+                write є: "No hay datos para calcular." :э »
+            :? else ¿:
+                val float promedio Ͱ calcular_promedio є: cantidad :э »
+                write є: "Promedio: " :э »
+                write є: promedio :э »
+            :?
+
+        :? elif є: ʃ: opcion :ʅ == ʃ: '4' :ʅ :э ¿:
+
+            | Nota más alta
+            if є: sin_registros є: :э :э ¿:
+                write є: "No hay datos." :э »
+            :? else ¿:
+                val float maxima Ͱ nota_maxima є: cantidad :э »
+                write є: "Nota máxima: " :э »
+                write є: maxima :э »
+            :?
+
+        :? elif є: ʃ: opcion :ʅ == ʃ: '5' :ʅ :э ¿:
+
+            | Nota más baja
+            if є: sin_registros є: :э :э ¿:
+                write є: "No hay datos." :э »
+            :? else ¿:
+                val float minima Ͱ nota_minima є: cantidad :э »
+                write є: "Nota mínima: " :э »
+                write є: minima :э »
+            :?
+
+        :? elif є: ʃ: opcion :ʅ == ʃ: '6' :ʅ :э ¿:
+
+            | Contar aprobados
+            val int aprobados Ͱ contar_aprobados є: cantidad :э »
+            write є: "Aprobados: " :э »
+            write є: aprobados :э »
+
+        :? elif є: ʃ: opcion :ʅ == ʃ: '7' :ʅ :э ¿:
+
+            | Ver estado de un estudiante
+            if є: sin_registros є: :э :э ¿:
+                write є: "No hay estudiantes." :э »
+            :? else ¿:
+                write є: "Ingrese el índice: " :э »
+                read є: indice :э »
+                if є: indice_valido є: indice :э :э ¿:
+                    mostrar_estado є: indice :э »
+                :? else ¿:
+                    write є: "Índice inválido." :э »
+                :?
+            :?
+
+        :? elif є: ʃ: opcion :ʅ == ʃ: OPCION_SALIR :ʅ :э ¿:
+
+            | Salir
+            continuar Ͱ false »
+            write є: "Saliendo del sistema..." :э »
+
+        :? else ¿:
+
+            | Opción no reconocida
+            write є: "Opción no válida." :э »
+
+        :?
+
+    :?
+
+    | -------- Resumen final --------
+    write є: "==============================" :э »
+    write є: "Resumen final" :э »
+    write є: "Estudiantes registrados: " :э »
+    write є: cantidad :э »
+    val int total_aprobados Ͱ contar_aprobados є: cantidad :э »
+    write є: "Aprobados: " :э »
+    write є: total_aprobados :э »
+    write є: "Fin del programa." :э »
+
+    return »
+:?

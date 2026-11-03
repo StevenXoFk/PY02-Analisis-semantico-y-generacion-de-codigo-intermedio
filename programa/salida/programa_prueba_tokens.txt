@@ -1,0 +1,2208 @@
+Linea   Columna   Token                    Lexema                             Tabla               Info                          
+
+11      1         VAL                      val                                Reservadas                                        
+
+11      5         INT                      int                                Reservadas                                        
+
+11      9         ID                       MAX_ESTUDIANTES                    Identificadores                                   
+
+11      25        ASIGN                    Ͱ                                  ninguna                                           
+
+11      27        LIT_INT                  5                                  Constantes          valor=5, tipo=int             
+
+11      29        FIN_SENTENCIA            »                                  ninguna                                           
+
+12      1         VAL                      val                                Reservadas                                        
+
+12      5         FLOAT                    float                              Reservadas                                        
+
+12      11        ID                       NOTA_MINIMA                        Identificadores                                   
+
+12      23        ASIGN                    Ͱ                                  ninguna                                           
+
+12      25        LIT_FLOAT                70.0                               Constantes          valor=70.0, tipo=float        
+
+12      30        FIN_SENTENCIA            »                                  ninguna                                           
+
+13      1         VAL                      val                                Reservadas                                        
+
+13      5         FLOAT                    float                              Reservadas                                        
+
+13      11        ID                       NOTA_MAXIMA                        Identificadores                                   
+
+13      23        ASIGN                    Ͱ                                  ninguna                                           
+
+13      25        LIT_FLOAT                100.0                              Constantes          valor=100.0, tipo=float       
+
+13      31        FIN_SENTENCIA            »                                  ninguna                                           
+
+14      1         VAL                      val                                Reservadas                                        
+
+14      5         CHAR                     char                               Reservadas                                        
+
+14      10        ID                       OPCION_SALIR                       Identificadores                                   
+
+14      23        ASIGN                    Ͱ                                  ninguna                                           
+
+14      25        LIT_CHAR                 'q'                                Constantes          valor='q', tipo=char          
+
+14      29        FIN_SENTENCIA            »                                  ninguna                                           
+
+15      1         VAL                      val                                Reservadas                                        
+
+15      5         STRING                   string                             Reservadas                                        
+
+15      12        ID                       TITULO                             Identificadores                                   
+
+15      19        ASIGN                    Ͱ                                  ninguna                                           
+
+15      21        LIT_STRING               "Sistema de Notas"                 Constantes          valor="Sistema de Notas", tipo=string
+
+15      40        FIN_SENTENCIA            »                                  ninguna                                           
+
+16      1         VAL                      val                                Reservadas                                        
+
+16      5         BOOL                     bool                               Reservadas                                        
+
+16      10        ID                       MODO_DEBUG                         Identificadores                                   
+
+16      21        ASIGN                    Ͱ                                  ninguna                                           
+
+16      23        FALSE                    false                              Constantes          valor=false, tipo=bool        
+
+16      29        FIN_SENTENCIA            »                                  ninguna                                           
+
+19      1         VAL                      val                                Reservadas                                        
+
+19      5         FLOAT                    float                              Reservadas                                        
+
+19      11        ID                       notas                              Identificadores                                   
+
+19      17        ASIGN                    Ͱ                                  ninguna                                           
+
+19      19        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+19      22        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+19      25        COMA                     ,                                  ninguna                                           
+
+19      27        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+19      30        COMA                     ,                                  ninguna                                           
+
+19      32        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+19      35        COMA                     ,                                  ninguna                                           
+
+19      37        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+19      40        COMA                     ,                                  ninguna                                           
+
+19      42        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+19      46        CLOSE_LLAVES             :?                                 ninguna                                           
+
+19      49        FIN_SENTENCIA            »                                  ninguna                                           
+
+20      1         VAL                      val                                Reservadas                                        
+
+20      5         INT                      int                                Reservadas                                        
+
+20      9         ID                       cantidad                           Identificadores                                   
+
+20      18        ASIGN                    Ͱ                                  ninguna                                           
+
+20      20        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+20      22        FIN_SENTENCIA            »                                  ninguna                                           
+
+25      1         FLOAT                    float                              Reservadas                                        
+
+25      7         ID                       calcular_promedio                  Identificadores                                   
+
+25      25        OPEN_PAREN               є:                                 ninguna                                           
+
+25      28        INT                      int                                Reservadas                                        
+
+25      32        ID                       n                                  Identificadores                                   
+
+25      34        CLOSE_PAREN              :э                                 ninguna                                           
+
+25      37        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+26      5         VAL                      val                                Reservadas                                        
+
+26      9         FLOAT                    float                              Reservadas                                        
+
+26      15        ID                       suma                               Identificadores                                   
+
+26      20        ASIGN                    Ͱ                                  ninguna                                           
+
+26      22        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+26      26        FIN_SENTENCIA            »                                  ninguna                                           
+
+27      5         VAL                      val                                Reservadas                                        
+
+27      9         INT                      int                                Reservadas                                        
+
+27      13        ID                       i                                  Identificadores                                   
+
+27      15        ASIGN                    Ͱ                                  ninguna                                           
+
+27      17        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+27      19        FIN_SENTENCIA            »                                  ninguna                                           
+
+28      5         WHILE                    while                              Reservadas                                        
+
+28      11        OPEN_PAREN               є:                                 ninguna                                           
+
+28      14        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+28      17        ID                       i                                  Identificadores                                   
+
+28      19        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+28      22        OP_MENOR                 <                                  ninguna                                           
+
+28      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+28      27        ID                       n                                  Identificadores                                   
+
+28      29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+28      32        CLOSE_PAREN              :э                                 ninguna                                           
+
+28      35        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+29      9         ID                       suma                               Identificadores                                   
+
+29      14        ASIGN                    Ͱ                                  ninguna                                           
+
+29      16        ID                       suma                               Identificadores                                   
+
+29      21        OP_SUMA                  +                                  ninguna                                           
+
+29      23        ID                       notas                              Identificadores                                   
+
+29      29        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+29      32        ID                       i                                  Identificadores                                   
+
+29      34        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+29      37        FIN_SENTENCIA            »                                  ninguna                                           
+
+30      9         ID                       i                                  Identificadores                                   
+
+30      10        OP_INCREMENTO            ++                                 ninguna                                           
+
+30      13        FIN_SENTENCIA            »                                  ninguna                                           
+
+31      5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+32      5         IF                       if                                 Reservadas                                        
+
+32      8         OPEN_PAREN               є:                                 ninguna                                           
+
+32      11        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+32      14        ID                       n                                  Identificadores                                   
+
+32      16        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+32      19        OP_IGUAL                 ==                                 ninguna                                           
+
+32      22        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+32      25        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+32      27        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+32      30        CLOSE_PAREN              :э                                 ninguna                                           
+
+32      33        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+33      9         RETURN                   return                             Reservadas                                        
+
+33      16        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+33      20        FIN_SENTENCIA            »                                  ninguna                                           
+
+34      5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+35      5         RETURN                   return                             Reservadas                                        
+
+35      12        ID                       suma                               Identificadores                                   
+
+35      17        OP_DIV_DECIMAL           /                                  ninguna                                           
+
+35      19        ID                       n                                  Identificadores                                   
+
+35      21        FIN_SENTENCIA            »                                  ninguna                                           
+
+36      1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+39      1         FLOAT                    float                              Reservadas                                        
+
+39      7         ID                       nota_maxima                        Identificadores                                   
+
+39      19        OPEN_PAREN               є:                                 ninguna                                           
+
+39      22        INT                      int                                Reservadas                                        
+
+39      26        ID                       n                                  Identificadores                                   
+
+39      28        CLOSE_PAREN              :э                                 ninguna                                           
+
+39      31        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+40      5         VAL                      val                                Reservadas                                        
+
+40      9         FLOAT                    float                              Reservadas                                        
+
+40      15        ID                       mayor                              Identificadores                                   
+
+40      21        ASIGN                    Ͱ                                  ninguna                                           
+
+40      23        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+40      27        FIN_SENTENCIA            »                                  ninguna                                           
+
+41      5         VAL                      val                                Reservadas                                        
+
+41      9         INT                      int                                Reservadas                                        
+
+41      13        ID                       i                                  Identificadores                                   
+
+41      15        ASIGN                    Ͱ                                  ninguna                                           
+
+41      17        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+41      19        FIN_SENTENCIA            »                                  ninguna                                           
+
+42      5         WHILE                    while                              Reservadas                                        
+
+42      11        OPEN_PAREN               є:                                 ninguna                                           
+
+42      14        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+42      17        ID                       i                                  Identificadores                                   
+
+42      19        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+42      22        OP_MENOR                 <                                  ninguna                                           
+
+42      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+42      27        ID                       n                                  Identificadores                                   
+
+42      29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+42      32        CLOSE_PAREN              :э                                 ninguna                                           
+
+42      35        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+43      9         IF                       if                                 Reservadas                                        
+
+43      12        OPEN_PAREN               є:                                 ninguna                                           
+
+43      15        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+43      18        ID                       notas                              Identificadores                                   
+
+43      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+43      27        ID                       i                                  Identificadores                                   
+
+43      29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+43      32        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+43      35        OP_MAYOR                 >                                  ninguna                                           
+
+43      37        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+43      40        ID                       mayor                              Identificadores                                   
+
+43      46        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+43      49        CLOSE_PAREN              :э                                 ninguna                                           
+
+43      52        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+44      13        ID                       mayor                              Identificadores                                   
+
+44      19        ASIGN                    Ͱ                                  ninguna                                           
+
+44      21        ID                       notas                              Identificadores                                   
+
+44      27        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+44      30        ID                       i                                  Identificadores                                   
+
+44      32        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+44      35        FIN_SENTENCIA            »                                  ninguna                                           
+
+45      9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+46      9         ID                       i                                  Identificadores                                   
+
+46      10        OP_INCREMENTO            ++                                 ninguna                                           
+
+46      13        FIN_SENTENCIA            »                                  ninguna                                           
+
+47      5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+48      5         RETURN                   return                             Reservadas                                        
+
+48      12        ID                       mayor                              Identificadores                                   
+
+48      18        FIN_SENTENCIA            »                                  ninguna                                           
+
+49      1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+52      1         FLOAT                    float                              Reservadas                                        
+
+52      7         ID                       nota_minima                        Identificadores                                   
+
+52      19        OPEN_PAREN               є:                                 ninguna                                           
+
+52      22        INT                      int                                Reservadas                                        
+
+52      26        ID                       n                                  Identificadores                                   
+
+52      28        CLOSE_PAREN              :э                                 ninguna                                           
+
+52      31        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+53      5         VAL                      val                                Reservadas                                        
+
+53      9         FLOAT                    float                              Reservadas                                        
+
+53      15        ID                       menor                              Identificadores                                   
+
+53      21        ASIGN                    Ͱ                                  ninguna                                           
+
+53      23        ID                       NOTA_MAXIMA                        Identificadores                                   
+
+53      35        FIN_SENTENCIA            »                                  ninguna                                           
+
+54      5         VAL                      val                                Reservadas                                        
+
+54      9         INT                      int                                Reservadas                                        
+
+54      13        ID                       i                                  Identificadores                                   
+
+54      15        ASIGN                    Ͱ                                  ninguna                                           
+
+54      17        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+54      19        FIN_SENTENCIA            »                                  ninguna                                           
+
+55      5         WHILE                    while                              Reservadas                                        
+
+55      11        OPEN_PAREN               є:                                 ninguna                                           
+
+55      14        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+55      17        ID                       i                                  Identificadores                                   
+
+55      19        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+55      22        OP_MENOR                 <                                  ninguna                                           
+
+55      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+55      27        ID                       n                                  Identificadores                                   
+
+55      29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+55      32        CLOSE_PAREN              :э                                 ninguna                                           
+
+55      35        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+56      9         IF                       if                                 Reservadas                                        
+
+56      12        OPEN_PAREN               є:                                 ninguna                                           
+
+56      15        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+56      18        ID                       notas                              Identificadores                                   
+
+56      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+56      27        ID                       i                                  Identificadores                                   
+
+56      29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+56      32        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+56      35        OP_MENOR                 <                                  ninguna                                           
+
+56      37        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+56      40        ID                       menor                              Identificadores                                   
+
+56      46        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+56      49        CLOSE_PAREN              :э                                 ninguna                                           
+
+56      52        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+57      13        ID                       menor                              Identificadores                                   
+
+57      19        ASIGN                    Ͱ                                  ninguna                                           
+
+57      21        ID                       notas                              Identificadores                                   
+
+57      27        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+57      30        ID                       i                                  Identificadores                                   
+
+57      32        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+57      35        FIN_SENTENCIA            »                                  ninguna                                           
+
+58      9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+59      9         ID                       i                                  Identificadores                                   
+
+59      10        OP_INCREMENTO            ++                                 ninguna                                           
+
+59      13        FIN_SENTENCIA            »                                  ninguna                                           
+
+60      5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+61      5         RETURN                   return                             Reservadas                                        
+
+61      12        ID                       menor                              Identificadores                                   
+
+61      18        FIN_SENTENCIA            »                                  ninguna                                           
+
+62      1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+65      1         INT                      int                                Reservadas                                        
+
+65      5         ID                       contar_aprobados                   Identificadores                                   
+
+65      22        OPEN_PAREN               є:                                 ninguna                                           
+
+65      25        INT                      int                                Reservadas                                        
+
+65      29        ID                       n                                  Identificadores                                   
+
+65      31        CLOSE_PAREN              :э                                 ninguna                                           
+
+65      34        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+66      5         VAL                      val                                Reservadas                                        
+
+66      9         INT                      int                                Reservadas                                        
+
+66      13        ID                       aprobados                          Identificadores                                   
+
+66      23        ASIGN                    Ͱ                                  ninguna                                           
+
+66      25        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+66      27        FIN_SENTENCIA            »                                  ninguna                                           
+
+67      5         VAL                      val                                Reservadas                                        
+
+67      9         INT                      int                                Reservadas                                        
+
+67      13        ID                       i                                  Identificadores                                   
+
+67      15        ASIGN                    Ͱ                                  ninguna                                           
+
+67      17        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+67      19        FIN_SENTENCIA            »                                  ninguna                                           
+
+68      5         WHILE                    while                              Reservadas                                        
+
+68      11        OPEN_PAREN               є:                                 ninguna                                           
+
+68      14        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+68      17        ID                       i                                  Identificadores                                   
+
+68      19        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+68      22        OP_MENOR                 <                                  ninguna                                           
+
+68      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+68      27        ID                       n                                  Identificadores                                   
+
+68      29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+68      32        CLOSE_PAREN              :э                                 ninguna                                           
+
+68      35        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+69      9         IF                       if                                 Reservadas                                        
+
+69      12        OPEN_PAREN               є:                                 ninguna                                           
+
+69      15        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+69      18        ID                       notas                              Identificadores                                   
+
+69      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+69      27        ID                       i                                  Identificadores                                   
+
+69      29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+69      32        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+69      35        OP_MAYOR_IGUAL           >=                                 ninguna                                           
+
+69      38        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+69      41        ID                       NOTA_MINIMA                        Identificadores                                   
+
+69      53        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+69      56        CLOSE_PAREN              :э                                 ninguna                                           
+
+69      59        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+70      13        ID                       aprobados                          Identificadores                                   
+
+70      22        OP_INCREMENTO            ++                                 ninguna                                           
+
+70      25        FIN_SENTENCIA            »                                  ninguna                                           
+
+71      9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+72      9         ID                       i                                  Identificadores                                   
+
+72      10        OP_INCREMENTO            ++                                 ninguna                                           
+
+72      13        FIN_SENTENCIA            »                                  ninguna                                           
+
+73      5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+74      5         RETURN                   return                             Reservadas                                        
+
+74      12        ID                       aprobados                          Identificadores                                   
+
+74      22        FIN_SENTENCIA            »                                  ninguna                                           
+
+75      1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+78      1         BOOL                     bool                               Reservadas                                        
+
+78      6         ID                       aprobo                             Identificadores                                   
+
+78      13        OPEN_PAREN               є:                                 ninguna                                           
+
+78      16        INT                      int                                Reservadas                                        
+
+78      20        ID                       indice                             Identificadores                                   
+
+78      27        CLOSE_PAREN              :э                                 ninguna                                           
+
+78      30        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+79      5         RETURN                   return                             Reservadas                                        
+
+79      12        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+79      15        ID                       notas                              Identificadores                                   
+
+79      21        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+79      24        ID                       indice                             Identificadores                                   
+
+79      31        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+79      34        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+79      37        OP_MAYOR_IGUAL           >=                                 ninguna                                           
+
+79      40        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+79      43        ID                       NOTA_MINIMA                        Identificadores                                   
+
+79      55        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+79      58        FIN_SENTENCIA            »                                  ninguna                                           
+
+80      1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+83      1         BOOL                     bool                               Reservadas                                        
+
+83      6         ID                       es_excelente                       Identificadores                                   
+
+83      19        OPEN_PAREN               є:                                 ninguna                                           
+
+83      22        INT                      int                                Reservadas                                        
+
+83      26        ID                       indice                             Identificadores                                   
+
+83      33        CLOSE_PAREN              :э                                 ninguna                                           
+
+83      36        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+84      5         RETURN                   return                             Reservadas                                        
+
+84      12        OPEN_PAREN               є:                                 ninguna                                           
+
+84      15        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+84      18        ID                       notas                              Identificadores                                   
+
+84      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+84      27        ID                       indice                             Identificadores                                   
+
+84      34        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+84      37        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+84      40        OP_MAYOR_IGUAL           >=                                 ninguna                                           
+
+84      43        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+84      46        LIT_FLOAT                90.0                               Constantes          valor=90.0, tipo=float        
+
+84      51        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+84      54        CLOSE_PAREN              :э                                 ninguna                                           
+
+84      57        OP_AND                   λ                                  ninguna                                           
+
+84      59        OPEN_PAREN               є:                                 ninguna                                           
+
+84      62        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+84      65        ID                       notas                              Identificadores                                   
+
+84      71        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+84      74        ID                       indice                             Identificadores                                   
+
+84      81        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+84      84        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+84      87        OP_MENOR_IGUAL           <=                                 ninguna                                           
+
+84      90        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+84      93        ID                       NOTA_MAXIMA                        Identificadores                                   
+
+84      105       CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+84      108       CLOSE_PAREN              :э                                 ninguna                                           
+
+84      111       FIN_SENTENCIA            »                                  ninguna                                           
+
+85      1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+88      1         BOOL                     bool                               Reservadas                                        
+
+88      6         ID                       en_riesgo                          Identificadores                                   
+
+88      16        OPEN_PAREN               є:                                 ninguna                                           
+
+88      19        INT                      int                                Reservadas                                        
+
+88      23        ID                       indice                             Identificadores                                   
+
+88      30        CLOSE_PAREN              :э                                 ninguna                                           
+
+88      33        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+89      5         RETURN                   return                             Reservadas                                        
+
+89      12        OPEN_PAREN               є:                                 ninguna                                           
+
+89      15        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+89      18        ID                       notas                              Identificadores                                   
+
+89      24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+89      27        ID                       indice                             Identificadores                                   
+
+89      34        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+89      37        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+89      40        OP_MENOR                 <                                  ninguna                                           
+
+89      42        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+89      45        LIT_FLOAT                60.0                               Constantes          valor=60.0, tipo=float        
+
+89      50        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+89      53        CLOSE_PAREN              :э                                 ninguna                                           
+
+89      56        OP_OR                    θ                                  ninguna                                           
+
+89      58        OPEN_PAREN               є:                                 ninguna                                           
+
+89      61        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+89      64        ID                       notas                              Identificadores                                   
+
+89      70        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+89      73        ID                       indice                             Identificadores                                   
+
+89      80        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+89      83        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+89      86        OP_IGUAL                 ==                                 ninguna                                           
+
+89      89        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+89      92        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+89      96        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+89      99        CLOSE_PAREN              :э                                 ninguna                                           
+
+89      102       FIN_SENTENCIA            »                                  ninguna                                           
+
+90      1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+93      1         BOOL                     bool                               Reservadas                                        
+
+93      6         ID                       sin_registros                      Identificadores                                   
+
+93      20        OPEN_PAREN               є:                                 ninguna                                           
+
+93      23        CLOSE_PAREN              :э                                 ninguna                                           
+
+93      26        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+94      5         RETURN                   return                             Reservadas                                        
+
+94      12        OP_NEGACION              Σ                                  ninguna                                           
+
+94      14        OPEN_PAREN               є:                                 ninguna                                           
+
+94      17        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+94      20        ID                       cantidad                           Identificadores                                   
+
+94      29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+94      32        OP_MAYOR                 >                                  ninguna                                           
+
+94      34        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+94      37        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+94      39        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+94      42        CLOSE_PAREN              :э                                 ninguna                                           
+
+94      45        FIN_SENTENCIA            »                                  ninguna                                           
+
+95      1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+98      1         BOOL                     bool                               Reservadas                                        
+
+98      6         ID                       indice_valido                      Identificadores                                   
+
+98      20        OPEN_PAREN               є:                                 ninguna                                           
+
+98      23        INT                      int                                Reservadas                                        
+
+98      27        ID                       i                                  Identificadores                                   
+
+98      29        CLOSE_PAREN              :э                                 ninguna                                           
+
+98      32        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+99      5         RETURN                   return                             Reservadas                                        
+
+99      12        OPEN_PAREN               є:                                 ninguna                                           
+
+99      15        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+99      18        ID                       i                                  Identificadores                                   
+
+99      20        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+99      23        OP_MAYOR_IGUAL           >=                                 ninguna                                           
+
+99      26        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+99      29        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+99      31        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+99      34        CLOSE_PAREN              :э                                 ninguna                                           
+
+99      37        OP_AND                   λ                                  ninguna                                           
+
+99      39        OPEN_PAREN               є:                                 ninguna                                           
+
+99      42        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+99      45        ID                       i                                  Identificadores                                   
+
+99      47        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+99      50        OP_MENOR                 <                                  ninguna                                           
+
+99      52        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+99      55        ID                       cantidad                           Identificadores                                   
+
+99      64        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+99      67        CLOSE_PAREN              :э                                 ninguna                                           
+
+99      70        FIN_SENTENCIA            »                                  ninguna                                           
+
+100     1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+105     1         INT                      int                                Reservadas                                        
+
+105     5         ID                       mostrar_menu                       Identificadores                                   
+
+105     18        OPEN_PAREN               є:                                 ninguna                                           
+
+105     21        CLOSE_PAREN              :э                                 ninguna                                           
+
+105     24        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+106     5         WRITE                    write                              Reservadas                                        
+
+106     11        OPEN_PAREN               є:                                 ninguna                                           
+
+106     14        LIT_STRING               "=============================="   Constantes          valor="==============================", tipo=string
+
+106     47        CLOSE_PAREN              :э                                 ninguna                                           
+
+106     50        FIN_SENTENCIA            »                                  ninguna                                           
+
+107     5         WRITE                    write                              Reservadas                                        
+
+107     11        OPEN_PAREN               є:                                 ninguna                                           
+
+107     14        ID                       TITULO                             Identificadores                                   
+
+107     21        CLOSE_PAREN              :э                                 ninguna                                           
+
+107     24        FIN_SENTENCIA            »                                  ninguna                                           
+
+108     5         WRITE                    write                              Reservadas                                        
+
+108     11        OPEN_PAREN               є:                                 ninguna                                           
+
+108     14        LIT_STRING               "=============================="   Constantes          valor="==============================", tipo=string
+
+108     47        CLOSE_PAREN              :э                                 ninguna                                           
+
+108     50        FIN_SENTENCIA            »                                  ninguna                                           
+
+109     5         WRITE                    write                              Reservadas                                        
+
+109     11        OPEN_PAREN               є:                                 ninguna                                           
+
+109     14        LIT_STRING               "1. Registrar nota"                Constantes          valor="1. Registrar nota", tipo=string
+
+109     34        CLOSE_PAREN              :э                                 ninguna                                           
+
+109     37        FIN_SENTENCIA            »                                  ninguna                                           
+
+110     5         WRITE                    write                              Reservadas                                        
+
+110     11        OPEN_PAREN               є:                                 ninguna                                           
+
+110     14        LIT_STRING               "2. Ver todas las notas"           Constantes          valor="2. Ver todas las notas", tipo=string
+
+110     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+110     42        FIN_SENTENCIA            »                                  ninguna                                           
+
+111     5         WRITE                    write                              Reservadas                                        
+
+111     11        OPEN_PAREN               є:                                 ninguna                                           
+
+111     14        LIT_STRING               "3. Calcular promedio"             Constantes          valor="3. Calcular promedio", tipo=string
+
+111     37        CLOSE_PAREN              :э                                 ninguna                                           
+
+111     40        FIN_SENTENCIA            »                                  ninguna                                           
+
+112     5         WRITE                    write                              Reservadas                                        
+
+112     11        OPEN_PAREN               є:                                 ninguna                                           
+
+112     14        LIT_STRING               "4. Ver nota más alta"             Constantes          valor="4. Ver nota más alta", tipo=string
+
+112     37        CLOSE_PAREN              :э                                 ninguna                                           
+
+112     40        FIN_SENTENCIA            »                                  ninguna                                           
+
+113     5         WRITE                    write                              Reservadas                                        
+
+113     11        OPEN_PAREN               є:                                 ninguna                                           
+
+113     14        LIT_STRING               "5. Ver nota más baja"             Constantes          valor="5. Ver nota más baja", tipo=string
+
+113     37        CLOSE_PAREN              :э                                 ninguna                                           
+
+113     40        FIN_SENTENCIA            »                                  ninguna                                           
+
+114     5         WRITE                    write                              Reservadas                                        
+
+114     11        OPEN_PAREN               є:                                 ninguna                                           
+
+114     14        LIT_STRING               "6. Contar aprobados"              Constantes          valor="6. Contar aprobados", tipo=string
+
+114     36        CLOSE_PAREN              :э                                 ninguna                                           
+
+114     39        FIN_SENTENCIA            »                                  ninguna                                           
+
+115     5         WRITE                    write                              Reservadas                                        
+
+115     11        OPEN_PAREN               є:                                 ninguna                                           
+
+115     14        LIT_STRING               "7. Ver estado de un estudiante"   Constantes          valor="7. Ver estado de un estudiante", tipo=string
+
+115     47        CLOSE_PAREN              :э                                 ninguna                                           
+
+115     50        FIN_SENTENCIA            »                                  ninguna                                           
+
+116     5         WRITE                    write                              Reservadas                                        
+
+116     11        OPEN_PAREN               є:                                 ninguna                                           
+
+116     14        LIT_STRING               "q. Salir"                         Constantes          valor="q. Salir", tipo=string 
+
+116     25        CLOSE_PAREN              :э                                 ninguna                                           
+
+116     28        FIN_SENTENCIA            »                                  ninguna                                           
+
+117     5         WRITE                    write                              Reservadas                                        
+
+117     11        OPEN_PAREN               є:                                 ninguna                                           
+
+117     14        LIT_STRING               "=============================="   Constantes          valor="==============================", tipo=string
+
+117     47        CLOSE_PAREN              :э                                 ninguna                                           
+
+117     50        FIN_SENTENCIA            »                                  ninguna                                           
+
+118     5         RETURN                   return                             Reservadas                                        
+
+118     12        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+118     14        FIN_SENTENCIA            »                                  ninguna                                           
+
+119     1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+122     1         INT                      int                                Reservadas                                        
+
+122     5         ID                       mostrar_notas                      Identificadores                                   
+
+122     19        OPEN_PAREN               є:                                 ninguna                                           
+
+122     22        INT                      int                                Reservadas                                        
+
+122     26        ID                       n                                  Identificadores                                   
+
+122     28        CLOSE_PAREN              :э                                 ninguna                                           
+
+122     31        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+123     5         IF                       if                                 Reservadas                                        
+
+123     8         OPEN_PAREN               є:                                 ninguna                                           
+
+123     11        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+123     14        ID                       n                                  Identificadores                                   
+
+123     16        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+123     19        OP_IGUAL                 ==                                 ninguna                                           
+
+123     22        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+123     25        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+123     27        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+123     30        CLOSE_PAREN              :э                                 ninguna                                           
+
+123     33        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+124     9         WRITE                    write                              Reservadas                                        
+
+124     15        OPEN_PAREN               є:                                 ninguna                                           
+
+124     18        LIT_STRING               "No hay notas registradas."        Constantes          valor="No hay notas registradas.", tipo=string
+
+124     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+124     49        FIN_SENTENCIA            »                                  ninguna                                           
+
+125     9         RETURN                   return                             Reservadas                                        
+
+125     16        FIN_SENTENCIA            »                                  ninguna                                           
+
+126     5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+127     5         VAL                      val                                Reservadas                                        
+
+127     9         INT                      int                                Reservadas                                        
+
+127     13        ID                       i                                  Identificadores                                   
+
+127     15        ASIGN                    Ͱ                                  ninguna                                           
+
+127     17        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+127     19        FIN_SENTENCIA            »                                  ninguna                                           
+
+128     5         WHILE                    while                              Reservadas                                        
+
+128     11        OPEN_PAREN               є:                                 ninguna                                           
+
+128     14        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+128     17        ID                       i                                  Identificadores                                   
+
+128     19        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+128     22        OP_MENOR                 <                                  ninguna                                           
+
+128     24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+128     27        ID                       n                                  Identificadores                                   
+
+128     29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+128     32        CLOSE_PAREN              :э                                 ninguna                                           
+
+128     35        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+129     9         WRITE                    write                              Reservadas                                        
+
+129     15        OPEN_PAREN               є:                                 ninguna                                           
+
+129     18        ID                       i                                  Identificadores                                   
+
+129     20        CLOSE_PAREN              :э                                 ninguna                                           
+
+129     23        FIN_SENTENCIA            »                                  ninguna                                           
+
+130     9         WRITE                    write                              Reservadas                                        
+
+130     15        OPEN_PAREN               є:                                 ninguna                                           
+
+130     18        ID                       notas                              Identificadores                                   
+
+130     24        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+130     27        ID                       i                                  Identificadores                                   
+
+130     29        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+130     32        CLOSE_PAREN              :э                                 ninguna                                           
+
+130     35        FIN_SENTENCIA            »                                  ninguna                                           
+
+131     9         ID                       i                                  Identificadores                                   
+
+131     10        OP_INCREMENTO            ++                                 ninguna                                           
+
+131     13        FIN_SENTENCIA            »                                  ninguna                                           
+
+132     5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+133     5         RETURN                   return                             Reservadas                                        
+
+133     12        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+133     14        FIN_SENTENCIA            »                                  ninguna                                           
+
+134     1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+137     1         INT                      int                                Reservadas                                        
+
+137     5         ID                       mostrar_estado                     Identificadores                                   
+
+137     20        OPEN_PAREN               є:                                 ninguna                                           
+
+137     23        INT                      int                                Reservadas                                        
+
+137     27        ID                       indice                             Identificadores                                   
+
+137     34        CLOSE_PAREN              :э                                 ninguna                                           
+
+137     37        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+138     5         IF                       if                                 Reservadas                                        
+
+138     8         OPEN_PAREN               є:                                 ninguna                                           
+
+138     11        ID                       aprobo                             Identificadores                                   
+
+138     18        OPEN_PAREN               є:                                 ninguna                                           
+
+138     21        ID                       indice                             Identificadores                                   
+
+138     28        CLOSE_PAREN              :э                                 ninguna                                           
+
+138     31        CLOSE_PAREN              :э                                 ninguna                                           
+
+138     34        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+139     9         WRITE                    write                              Reservadas                                        
+
+139     15        OPEN_PAREN               є:                                 ninguna                                           
+
+139     18        LIT_STRING               "Aprobó"                           Constantes          valor="Aprobó", tipo=string   
+
+139     27        CLOSE_PAREN              :э                                 ninguna                                           
+
+139     30        FIN_SENTENCIA            »                                  ninguna                                           
+
+140     5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+140     8         ELIF                     elif                               Reservadas                                        
+
+140     13        OPEN_PAREN               є:                                 ninguna                                           
+
+140     16        ID                       en_riesgo                          Identificadores                                   
+
+140     26        OPEN_PAREN               є:                                 ninguna                                           
+
+140     29        ID                       indice                             Identificadores                                   
+
+140     36        CLOSE_PAREN              :э                                 ninguna                                           
+
+140     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+140     42        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+141     9         WRITE                    write                              Reservadas                                        
+
+141     15        OPEN_PAREN               є:                                 ninguna                                           
+
+141     18        LIT_STRING               "En riesgo"                        Constantes          valor="En riesgo", tipo=string
+
+141     30        CLOSE_PAREN              :э                                 ninguna                                           
+
+141     33        FIN_SENTENCIA            »                                  ninguna                                           
+
+142     5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+142     8         ELSE                     else                               Reservadas                                        
+
+142     13        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+143     9         WRITE                    write                              Reservadas                                        
+
+143     15        OPEN_PAREN               є:                                 ninguna                                           
+
+143     18        LIT_STRING               "Reprobó"                          Constantes          valor="Reprobó", tipo=string  
+
+143     28        CLOSE_PAREN              :э                                 ninguna                                           
+
+143     31        FIN_SENTENCIA            »                                  ninguna                                           
+
+144     5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+146     5         IF                       if                                 Reservadas                                        
+
+146     8         OPEN_PAREN               є:                                 ninguna                                           
+
+146     11        ID                       es_excelente                       Identificadores                                   
+
+146     24        OPEN_PAREN               є:                                 ninguna                                           
+
+146     27        ID                       indice                             Identificadores                                   
+
+146     34        CLOSE_PAREN              :э                                 ninguna                                           
+
+146     37        CLOSE_PAREN              :э                                 ninguna                                           
+
+146     40        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+147     9         WRITE                    write                              Reservadas                                        
+
+147     15        OPEN_PAREN               є:                                 ninguna                                           
+
+147     18        LIT_STRING               "Nota excelente"                   Constantes          valor="Nota excelente", tipo=string
+
+147     35        CLOSE_PAREN              :э                                 ninguna                                           
+
+147     38        FIN_SENTENCIA            »                                  ninguna                                           
+
+148     5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+149     5         RETURN                   return                             Reservadas                                        
+
+149     12        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+149     14        FIN_SENTENCIA            »                                  ninguna                                           
+
+150     1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+153     1         BOOL                     bool                               Reservadas                                        
+
+153     6         ID                       hay_espacio                        Identificadores                                   
+
+153     18        OPEN_PAREN               є:                                 ninguna                                           
+
+153     21        CLOSE_PAREN              :э                                 ninguna                                           
+
+153     24        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+154     5         RETURN                   return                             Reservadas                                        
+
+154     12        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+154     15        ID                       cantidad                           Identificadores                                   
+
+154     24        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+154     27        OP_MENOR                 <                                  ninguna                                           
+
+154     29        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+154     32        ID                       MAX_ESTUDIANTES                    Identificadores                                   
+
+154     48        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+154     51        FIN_SENTENCIA            »                                  ninguna                                           
+
+155     1         CLOSE_LLAVES             :?                                 ninguna                                           
+
+158     1         VOID                     void                               Reservadas                                        
+
+158     6         PRINCIPAL                principal                          Reservadas                                        
+
+158     16        OPEN_PAREN               є:                                 ninguna                                           
+
+158     19        CLOSE_PAREN              :э                                 ninguna                                           
+
+158     22        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+160     5         VAL                      val                                Reservadas                                        
+
+160     9         CHAR                     char                               Reservadas                                        
+
+160     14        ID                       opcion                             Identificadores                                   
+
+160     21        ASIGN                    Ͱ                                  ninguna                                           
+
+160     23        LIT_CHAR                 '0'                                Constantes          valor='0', tipo=char          
+
+160     27        FIN_SENTENCIA            »                                  ninguna                                           
+
+161     5         VAL                      val                                Reservadas                                        
+
+161     9         FLOAT                    float                              Reservadas                                        
+
+161     15        ID                       nota                               Identificadores                                   
+
+161     20        ASIGN                    Ͱ                                  ninguna                                           
+
+161     22        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+161     26        FIN_SENTENCIA            »                                  ninguna                                           
+
+162     5         VAL                      val                                Reservadas                                        
+
+162     9         INT                      int                                Reservadas                                        
+
+162     13        ID                       indice                             Identificadores                                   
+
+162     20        ASIGN                    Ͱ                                  ninguna                                           
+
+162     22        LIT_INT                  0                                  Constantes          valor=0, tipo=int             
+
+162     24        FIN_SENTENCIA            »                                  ninguna                                           
+
+163     5         VAL                      val                                Reservadas                                        
+
+163     9         BOOL                     bool                               Reservadas                                        
+
+163     14        ID                       continuar                          Identificadores                                   
+
+163     24        ASIGN                    Ͱ                                  ninguna                                           
+
+163     26        TRUE                     true                               Constantes          valor=true, tipo=bool         
+
+163     31        FIN_SENTENCIA            »                                  ninguna                                           
+
+165     5         WHILE                    while                              Reservadas                                        
+
+165     11        OPEN_PAREN               є:                                 ninguna                                           
+
+165     14        ID                       continuar                          Identificadores                                   
+
+165     24        CLOSE_PAREN              :э                                 ninguna                                           
+
+165     27        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+167     9         ID                       mostrar_menu                       Identificadores                                   
+
+167     22        OPEN_PAREN               є:                                 ninguna                                           
+
+167     25        CLOSE_PAREN              :э                                 ninguna                                           
+
+167     28        FIN_SENTENCIA            »                                  ninguna                                           
+
+169     9         WRITE                    write                              Reservadas                                        
+
+169     15        OPEN_PAREN               є:                                 ninguna                                           
+
+169     18        LIT_STRING               "Elija una opción: "               Constantes          valor="Elija una opción: ", tipo=string
+
+169     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+169     42        FIN_SENTENCIA            »                                  ninguna                                           
+
+170     9         READ                     read                               Reservadas                                        
+
+170     14        OPEN_PAREN               є:                                 ninguna                                           
+
+170     17        ID                       opcion                             Identificadores                                   
+
+170     24        CLOSE_PAREN              :э                                 ninguna                                           
+
+170     27        FIN_SENTENCIA            »                                  ninguna                                           
+
+172     9         IF                       if                                 Reservadas                                        
+
+172     12        OPEN_PAREN               є:                                 ninguna                                           
+
+172     15        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+172     18        ID                       opcion                             Identificadores                                   
+
+172     25        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+172     28        OP_IGUAL                 ==                                 ninguna                                           
+
+172     31        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+172     34        LIT_CHAR                 '1'                                Constantes          valor='1', tipo=char          
+
+172     38        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+172     41        CLOSE_PAREN              :э                                 ninguna                                           
+
+172     44        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+175     13        IF                       if                                 Reservadas                                        
+
+175     16        OPEN_PAREN               є:                                 ninguna                                           
+
+175     19        ID                       hay_espacio                        Identificadores                                   
+
+175     31        OPEN_PAREN               є:                                 ninguna                                           
+
+175     34        CLOSE_PAREN              :э                                 ninguna                                           
+
+175     37        CLOSE_PAREN              :э                                 ninguna                                           
+
+175     40        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+176     17        WRITE                    write                              Reservadas                                        
+
+176     23        OPEN_PAREN               є:                                 ninguna                                           
+
+176     26        LIT_STRING               "Ingrese la nota: "                Constantes          valor="Ingrese la nota: ", tipo=string
+
+176     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+176     49        FIN_SENTENCIA            »                                  ninguna                                           
+
+177     17        READ                     read                               Reservadas                                        
+
+177     22        OPEN_PAREN               є:                                 ninguna                                           
+
+177     25        ID                       nota                               Identificadores                                   
+
+177     30        CLOSE_PAREN              :э                                 ninguna                                           
+
+177     33        FIN_SENTENCIA            »                                  ninguna                                           
+
+178     17        IF                       if                                 Reservadas                                        
+
+178     20        OPEN_PAREN               є:                                 ninguna                                           
+
+178     23        OPEN_PAREN               є:                                 ninguna                                           
+
+178     26        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+178     29        ID                       nota                               Identificadores                                   
+
+178     34        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+178     37        OP_MAYOR_IGUAL           >=                                 ninguna                                           
+
+178     40        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+178     43        LIT_FLOAT                0.0                                Constantes          valor=0.0, tipo=float         
+
+178     47        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+178     50        CLOSE_PAREN              :э                                 ninguna                                           
+
+178     53        OP_AND                   λ                                  ninguna                                           
+
+178     55        OPEN_PAREN               є:                                 ninguna                                           
+
+178     58        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+178     61        ID                       nota                               Identificadores                                   
+
+178     66        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+178     69        OP_MENOR_IGUAL           <=                                 ninguna                                           
+
+178     72        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+178     75        ID                       NOTA_MAXIMA                        Identificadores                                   
+
+178     87        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+178     90        CLOSE_PAREN              :э                                 ninguna                                           
+
+178     93        CLOSE_PAREN              :э                                 ninguna                                           
+
+178     96        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+179     21        ID                       notas                              Identificadores                                   
+
+179     27        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+179     30        ID                       cantidad                           Identificadores                                   
+
+179     39        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+179     42        ASIGN                    Ͱ                                  ninguna                                           
+
+179     44        ID                       nota                               Identificadores                                   
+
+179     49        FIN_SENTENCIA            »                                  ninguna                                           
+
+180     21        ID                       cantidad                           Identificadores                                   
+
+180     29        OP_INCREMENTO            ++                                 ninguna                                           
+
+180     32        FIN_SENTENCIA            »                                  ninguna                                           
+
+181     21        WRITE                    write                              Reservadas                                        
+
+181     27        OPEN_PAREN               є:                                 ninguna                                           
+
+181     30        LIT_STRING               "Nota registrada."                 Constantes          valor="Nota registrada.", tipo=string
+
+181     49        CLOSE_PAREN              :э                                 ninguna                                           
+
+181     52        FIN_SENTENCIA            »                                  ninguna                                           
+
+182     17        CLOSE_LLAVES             :?                                 ninguna                                           
+
+182     20        ELSE                     else                               Reservadas                                        
+
+182     25        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+183     21        WRITE                    write                              Reservadas                                        
+
+183     27        OPEN_PAREN               є:                                 ninguna                                           
+
+183     30        LIT_STRING               "Nota fuera de rango."             Constantes          valor="Nota fuera de rango.", tipo=string
+
+183     53        CLOSE_PAREN              :э                                 ninguna                                           
+
+183     56        FIN_SENTENCIA            »                                  ninguna                                           
+
+184     17        CLOSE_LLAVES             :?                                 ninguna                                           
+
+185     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+185     16        ELSE                     else                               Reservadas                                        
+
+185     21        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+186     17        WRITE                    write                              Reservadas                                        
+
+186     23        OPEN_PAREN               є:                                 ninguna                                           
+
+186     26        LIT_STRING               "No hay espacio para más notas."   Constantes          valor="No hay espacio para más notas.", tipo=string
+
+186     59        CLOSE_PAREN              :э                                 ninguna                                           
+
+186     62        FIN_SENTENCIA            »                                  ninguna                                           
+
+187     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+189     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+189     12        ELIF                     elif                               Reservadas                                        
+
+189     17        OPEN_PAREN               є:                                 ninguna                                           
+
+189     20        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+189     23        ID                       opcion                             Identificadores                                   
+
+189     30        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+189     33        OP_IGUAL                 ==                                 ninguna                                           
+
+189     36        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+189     39        LIT_CHAR                 '2'                                Constantes          valor='2', tipo=char          
+
+189     43        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+189     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+189     49        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+192     13        ID                       mostrar_notas                      Identificadores                                   
+
+192     27        OPEN_PAREN               є:                                 ninguna                                           
+
+192     30        ID                       cantidad                           Identificadores                                   
+
+192     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+192     42        FIN_SENTENCIA            »                                  ninguna                                           
+
+194     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+194     12        ELIF                     elif                               Reservadas                                        
+
+194     17        OPEN_PAREN               є:                                 ninguna                                           
+
+194     20        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+194     23        ID                       opcion                             Identificadores                                   
+
+194     30        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+194     33        OP_IGUAL                 ==                                 ninguna                                           
+
+194     36        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+194     39        LIT_CHAR                 '3'                                Constantes          valor='3', tipo=char          
+
+194     43        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+194     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+194     49        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+197     13        IF                       if                                 Reservadas                                        
+
+197     16        OPEN_PAREN               є:                                 ninguna                                           
+
+197     19        ID                       sin_registros                      Identificadores                                   
+
+197     33        OPEN_PAREN               є:                                 ninguna                                           
+
+197     36        CLOSE_PAREN              :э                                 ninguna                                           
+
+197     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+197     42        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+198     17        WRITE                    write                              Reservadas                                        
+
+198     23        OPEN_PAREN               є:                                 ninguna                                           
+
+198     26        LIT_STRING               "No hay datos para calcular."      Constantes          valor="No hay datos para calcular.", tipo=string
+
+198     56        CLOSE_PAREN              :э                                 ninguna                                           
+
+198     59        FIN_SENTENCIA            »                                  ninguna                                           
+
+199     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+199     16        ELSE                     else                               Reservadas                                        
+
+199     21        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+200     17        VAL                      val                                Reservadas                                        
+
+200     21        FLOAT                    float                              Reservadas                                        
+
+200     27        ID                       promedio                           Identificadores                                   
+
+200     36        ASIGN                    Ͱ                                  ninguna                                           
+
+200     38        ID                       calcular_promedio                  Identificadores                                   
+
+200     56        OPEN_PAREN               є:                                 ninguna                                           
+
+200     59        ID                       cantidad                           Identificadores                                   
+
+200     68        CLOSE_PAREN              :э                                 ninguna                                           
+
+200     71        FIN_SENTENCIA            »                                  ninguna                                           
+
+201     17        WRITE                    write                              Reservadas                                        
+
+201     23        OPEN_PAREN               є:                                 ninguna                                           
+
+201     26        LIT_STRING               "Promedio: "                       Constantes          valor="Promedio: ", tipo=string
+
+201     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+201     42        FIN_SENTENCIA            »                                  ninguna                                           
+
+202     17        WRITE                    write                              Reservadas                                        
+
+202     23        OPEN_PAREN               є:                                 ninguna                                           
+
+202     26        ID                       promedio                           Identificadores                                   
+
+202     35        CLOSE_PAREN              :э                                 ninguna                                           
+
+202     38        FIN_SENTENCIA            »                                  ninguna                                           
+
+203     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+205     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+205     12        ELIF                     elif                               Reservadas                                        
+
+205     17        OPEN_PAREN               є:                                 ninguna                                           
+
+205     20        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+205     23        ID                       opcion                             Identificadores                                   
+
+205     30        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+205     33        OP_IGUAL                 ==                                 ninguna                                           
+
+205     36        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+205     39        LIT_CHAR                 '4'                                Constantes          valor='4', tipo=char          
+
+205     43        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+205     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+205     49        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+208     13        IF                       if                                 Reservadas                                        
+
+208     16        OPEN_PAREN               є:                                 ninguna                                           
+
+208     19        ID                       sin_registros                      Identificadores                                   
+
+208     33        OPEN_PAREN               є:                                 ninguna                                           
+
+208     36        CLOSE_PAREN              :э                                 ninguna                                           
+
+208     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+208     42        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+209     17        WRITE                    write                              Reservadas                                        
+
+209     23        OPEN_PAREN               є:                                 ninguna                                           
+
+209     26        LIT_STRING               "No hay datos."                    Constantes          valor="No hay datos.", tipo=string
+
+209     42        CLOSE_PAREN              :э                                 ninguna                                           
+
+209     45        FIN_SENTENCIA            »                                  ninguna                                           
+
+210     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+210     16        ELSE                     else                               Reservadas                                        
+
+210     21        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+211     17        VAL                      val                                Reservadas                                        
+
+211     21        FLOAT                    float                              Reservadas                                        
+
+211     27        ID                       maxima                             Identificadores                                   
+
+211     34        ASIGN                    Ͱ                                  ninguna                                           
+
+211     36        ID                       nota_maxima                        Identificadores                                   
+
+211     48        OPEN_PAREN               є:                                 ninguna                                           
+
+211     51        ID                       cantidad                           Identificadores                                   
+
+211     60        CLOSE_PAREN              :э                                 ninguna                                           
+
+211     63        FIN_SENTENCIA            »                                  ninguna                                           
+
+212     17        WRITE                    write                              Reservadas                                        
+
+212     23        OPEN_PAREN               є:                                 ninguna                                           
+
+212     26        LIT_STRING               "Nota máxima: "                    Constantes          valor="Nota máxima: ", tipo=string
+
+212     42        CLOSE_PAREN              :э                                 ninguna                                           
+
+212     45        FIN_SENTENCIA            »                                  ninguna                                           
+
+213     17        WRITE                    write                              Reservadas                                        
+
+213     23        OPEN_PAREN               є:                                 ninguna                                           
+
+213     26        ID                       maxima                             Identificadores                                   
+
+213     33        CLOSE_PAREN              :э                                 ninguna                                           
+
+213     36        FIN_SENTENCIA            »                                  ninguna                                           
+
+214     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+216     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+216     12        ELIF                     elif                               Reservadas                                        
+
+216     17        OPEN_PAREN               є:                                 ninguna                                           
+
+216     20        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+216     23        ID                       opcion                             Identificadores                                   
+
+216     30        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+216     33        OP_IGUAL                 ==                                 ninguna                                           
+
+216     36        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+216     39        LIT_CHAR                 '5'                                Constantes          valor='5', tipo=char          
+
+216     43        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+216     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+216     49        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+219     13        IF                       if                                 Reservadas                                        
+
+219     16        OPEN_PAREN               є:                                 ninguna                                           
+
+219     19        ID                       sin_registros                      Identificadores                                   
+
+219     33        OPEN_PAREN               є:                                 ninguna                                           
+
+219     36        CLOSE_PAREN              :э                                 ninguna                                           
+
+219     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+219     42        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+220     17        WRITE                    write                              Reservadas                                        
+
+220     23        OPEN_PAREN               є:                                 ninguna                                           
+
+220     26        LIT_STRING               "No hay datos."                    Constantes          valor="No hay datos.", tipo=string
+
+220     42        CLOSE_PAREN              :э                                 ninguna                                           
+
+220     45        FIN_SENTENCIA            »                                  ninguna                                           
+
+221     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+221     16        ELSE                     else                               Reservadas                                        
+
+221     21        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+222     17        VAL                      val                                Reservadas                                        
+
+222     21        FLOAT                    float                              Reservadas                                        
+
+222     27        ID                       minima                             Identificadores                                   
+
+222     34        ASIGN                    Ͱ                                  ninguna                                           
+
+222     36        ID                       nota_minima                        Identificadores                                   
+
+222     48        OPEN_PAREN               є:                                 ninguna                                           
+
+222     51        ID                       cantidad                           Identificadores                                   
+
+222     60        CLOSE_PAREN              :э                                 ninguna                                           
+
+222     63        FIN_SENTENCIA            »                                  ninguna                                           
+
+223     17        WRITE                    write                              Reservadas                                        
+
+223     23        OPEN_PAREN               є:                                 ninguna                                           
+
+223     26        LIT_STRING               "Nota mínima: "                    Constantes          valor="Nota mínima: ", tipo=string
+
+223     42        CLOSE_PAREN              :э                                 ninguna                                           
+
+223     45        FIN_SENTENCIA            »                                  ninguna                                           
+
+224     17        WRITE                    write                              Reservadas                                        
+
+224     23        OPEN_PAREN               є:                                 ninguna                                           
+
+224     26        ID                       minima                             Identificadores                                   
+
+224     33        CLOSE_PAREN              :э                                 ninguna                                           
+
+224     36        FIN_SENTENCIA            »                                  ninguna                                           
+
+225     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+227     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+227     12        ELIF                     elif                               Reservadas                                        
+
+227     17        OPEN_PAREN               є:                                 ninguna                                           
+
+227     20        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+227     23        ID                       opcion                             Identificadores                                   
+
+227     30        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+227     33        OP_IGUAL                 ==                                 ninguna                                           
+
+227     36        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+227     39        LIT_CHAR                 '6'                                Constantes          valor='6', tipo=char          
+
+227     43        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+227     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+227     49        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+230     13        VAL                      val                                Reservadas                                        
+
+230     17        INT                      int                                Reservadas                                        
+
+230     21        ID                       aprobados                          Identificadores                                   
+
+230     31        ASIGN                    Ͱ                                  ninguna                                           
+
+230     33        ID                       contar_aprobados                   Identificadores                                   
+
+230     50        OPEN_PAREN               є:                                 ninguna                                           
+
+230     53        ID                       cantidad                           Identificadores                                   
+
+230     62        CLOSE_PAREN              :э                                 ninguna                                           
+
+230     65        FIN_SENTENCIA            »                                  ninguna                                           
+
+231     13        WRITE                    write                              Reservadas                                        
+
+231     19        OPEN_PAREN               є:                                 ninguna                                           
+
+231     22        LIT_STRING               "Aprobados: "                      Constantes          valor="Aprobados: ", tipo=string
+
+231     36        CLOSE_PAREN              :э                                 ninguna                                           
+
+231     39        FIN_SENTENCIA            »                                  ninguna                                           
+
+232     13        WRITE                    write                              Reservadas                                        
+
+232     19        OPEN_PAREN               є:                                 ninguna                                           
+
+232     22        ID                       aprobados                          Identificadores                                   
+
+232     32        CLOSE_PAREN              :э                                 ninguna                                           
+
+232     35        FIN_SENTENCIA            »                                  ninguna                                           
+
+234     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+234     12        ELIF                     elif                               Reservadas                                        
+
+234     17        OPEN_PAREN               є:                                 ninguna                                           
+
+234     20        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+234     23        ID                       opcion                             Identificadores                                   
+
+234     30        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+234     33        OP_IGUAL                 ==                                 ninguna                                           
+
+234     36        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+234     39        LIT_CHAR                 '7'                                Constantes          valor='7', tipo=char          
+
+234     43        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+234     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+234     49        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+237     13        IF                       if                                 Reservadas                                        
+
+237     16        OPEN_PAREN               є:                                 ninguna                                           
+
+237     19        ID                       sin_registros                      Identificadores                                   
+
+237     33        OPEN_PAREN               є:                                 ninguna                                           
+
+237     36        CLOSE_PAREN              :э                                 ninguna                                           
+
+237     39        CLOSE_PAREN              :э                                 ninguna                                           
+
+237     42        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+238     17        WRITE                    write                              Reservadas                                        
+
+238     23        OPEN_PAREN               є:                                 ninguna                                           
+
+238     26        LIT_STRING               "No hay estudiantes."              Constantes          valor="No hay estudiantes.", tipo=string
+
+238     48        CLOSE_PAREN              :э                                 ninguna                                           
+
+238     51        FIN_SENTENCIA            »                                  ninguna                                           
+
+239     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+239     16        ELSE                     else                               Reservadas                                        
+
+239     21        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+240     17        WRITE                    write                              Reservadas                                        
+
+240     23        OPEN_PAREN               є:                                 ninguna                                           
+
+240     26        LIT_STRING               "Ingrese el índice: "              Constantes          valor="Ingrese el índice: ", tipo=string
+
+240     48        CLOSE_PAREN              :э                                 ninguna                                           
+
+240     51        FIN_SENTENCIA            »                                  ninguna                                           
+
+241     17        READ                     read                               Reservadas                                        
+
+241     22        OPEN_PAREN               є:                                 ninguna                                           
+
+241     25        ID                       indice                             Identificadores                                   
+
+241     32        CLOSE_PAREN              :э                                 ninguna                                           
+
+241     35        FIN_SENTENCIA            »                                  ninguna                                           
+
+242     17        IF                       if                                 Reservadas                                        
+
+242     20        OPEN_PAREN               є:                                 ninguna                                           
+
+242     23        ID                       indice_valido                      Identificadores                                   
+
+242     37        OPEN_PAREN               є:                                 ninguna                                           
+
+242     40        ID                       indice                             Identificadores                                   
+
+242     47        CLOSE_PAREN              :э                                 ninguna                                           
+
+242     50        CLOSE_PAREN              :э                                 ninguna                                           
+
+242     53        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+243     21        ID                       mostrar_estado                     Identificadores                                   
+
+243     36        OPEN_PAREN               є:                                 ninguna                                           
+
+243     39        ID                       indice                             Identificadores                                   
+
+243     46        CLOSE_PAREN              :э                                 ninguna                                           
+
+243     49        FIN_SENTENCIA            »                                  ninguna                                           
+
+244     17        CLOSE_LLAVES             :?                                 ninguna                                           
+
+244     20        ELSE                     else                               Reservadas                                        
+
+244     25        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+245     21        WRITE                    write                              Reservadas                                        
+
+245     27        OPEN_PAREN               є:                                 ninguna                                           
+
+245     30        LIT_STRING               "Índice inválido."                 Constantes          valor="Índice inválido.", tipo=string
+
+245     49        CLOSE_PAREN              :э                                 ninguna                                           
+
+245     52        FIN_SENTENCIA            »                                  ninguna                                           
+
+246     17        CLOSE_LLAVES             :?                                 ninguna                                           
+
+247     13        CLOSE_LLAVES             :?                                 ninguna                                           
+
+249     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+249     12        ELIF                     elif                               Reservadas                                        
+
+249     17        OPEN_PAREN               є:                                 ninguna                                           
+
+249     20        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+249     23        ID                       opcion                             Identificadores                                   
+
+249     30        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+249     33        OP_IGUAL                 ==                                 ninguna                                           
+
+249     36        OPEN_BRACKET             ʃ:                                 ninguna                                           
+
+249     39        ID                       OPCION_SALIR                       Identificadores                                   
+
+249     52        CLOSE_BRACKET            :ʅ                                 ninguna                                           
+
+249     55        CLOSE_PAREN              :э                                 ninguna                                           
+
+249     58        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+252     13        ID                       continuar                          Identificadores                                   
+
+252     23        ASIGN                    Ͱ                                  ninguna                                           
+
+252     25        FALSE                    false                              Constantes          valor=false, tipo=bool        
+
+252     31        FIN_SENTENCIA            »                                  ninguna                                           
+
+253     13        WRITE                    write                              Reservadas                                        
+
+253     19        OPEN_PAREN               є:                                 ninguna                                           
+
+253     22        LIT_STRING               "Saliendo del sistema..."          Constantes          valor="Saliendo del sistema...", tipo=string
+
+253     48        CLOSE_PAREN              :э                                 ninguna                                           
+
+253     51        FIN_SENTENCIA            »                                  ninguna                                           
+
+255     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+255     12        ELSE                     else                               Reservadas                                        
+
+255     17        OPEN_LLAVES              ¿:                                 ninguna                                           
+
+258     13        WRITE                    write                              Reservadas                                        
+
+258     19        OPEN_PAREN               є:                                 ninguna                                           
+
+258     22        LIT_STRING               "Opción no válida."                Constantes          valor="Opción no válida.", tipo=string
+
+258     42        CLOSE_PAREN              :э                                 ninguna                                           
+
+258     45        FIN_SENTENCIA            »                                  ninguna                                           
+
+260     9         CLOSE_LLAVES             :?                                 ninguna                                           
+
+262     5         CLOSE_LLAVES             :?                                 ninguna                                           
+
+265     5         WRITE                    write                              Reservadas                                        
+
+265     11        OPEN_PAREN               є:                                 ninguna                                           
+
+265     14        LIT_STRING               "=============================="   Constantes          valor="==============================", tipo=string
+
+265     47        CLOSE_PAREN              :э                                 ninguna                                           
+
+265     50        FIN_SENTENCIA            »                                  ninguna                                           
+
+266     5         WRITE                    write                              Reservadas                                        
+
+266     11        OPEN_PAREN               є:                                 ninguna                                           
+
+266     14        LIT_STRING               "Resumen final"                    Constantes          valor="Resumen final", tipo=string
+
+266     30        CLOSE_PAREN              :э                                 ninguna                                           
+
+266     33        FIN_SENTENCIA            »                                  ninguna                                           
+
+267     5         WRITE                    write                              Reservadas                                        
+
+267     11        OPEN_PAREN               є:                                 ninguna                                           
+
+267     14        LIT_STRING               "Estudiantes registrados: "        Constantes          valor="Estudiantes registrados: ", tipo=string
+
+267     42        CLOSE_PAREN              :э                                 ninguna                                           
+
+267     45        FIN_SENTENCIA            »                                  ninguna                                           
+
+268     5         WRITE                    write                              Reservadas                                        
+
+268     11        OPEN_PAREN               є:                                 ninguna                                           
+
+268     14        ID                       cantidad                           Identificadores                                   
+
+268     23        CLOSE_PAREN              :э                                 ninguna                                           
+
+268     26        FIN_SENTENCIA            »                                  ninguna                                           
+
+269     5         VAL                      val                                Reservadas                                        
+
+269     9         INT                      int                                Reservadas                                        
+
+269     13        ID                       total_aprobados                    Identificadores                                   
+
+269     29        ASIGN                    Ͱ                                  ninguna                                           
+
+269     31        ID                       contar_aprobados                   Identificadores                                   
+
+269     48        OPEN_PAREN               є:                                 ninguna                                           
+
+269     51        ID                       cantidad                           Identificadores                                   
+
+269     60        CLOSE_PAREN              :э                                 ninguna                                           
+
+269     63        FIN_SENTENCIA            »                                  ninguna                                           
+
+270     5         WRITE                    write                              Reservadas                                        
+
+270     11        OPEN_PAREN               є:                                 ninguna                                           
+
+270     14        LIT_STRING               "Aprobados: "                      Constantes          valor="Aprobados: ", tipo=string
+
+270     28        CLOSE_PAREN              :э                                 ninguna                                           
+
+270     31        FIN_SENTENCIA            »                                  ninguna                                           
+
+271     5         WRITE                    write                              Reservadas                                        
+
+271     11        OPEN_PAREN               є:                                 ninguna                                           
+
+271     14        ID                       total_aprobados                    Identificadores                                   
+
+271     30        CLOSE_PAREN              :э                                 ninguna                                           
+
+271     33        FIN_SENTENCIA            »                                  ninguna                                           
+
+272     5         WRITE                    write                              Reservadas                                        
+
+272     11        OPEN_PAREN               є:                                 ninguna                                           
+
+272     14        LIT_STRING               "Fin del programa."                Constantes          valor="Fin del programa.", tipo=string
+
+272     34        CLOSE_PAREN              :э                                 ninguna                                           
+
+272     37        FIN_SENTENCIA            »                                  ninguna                                           
+
+274     5         RETURN                   return                             Reservadas                                        
+
+274     12        FIN_SENTENCIA            »                                  ninguna                                           
+
+275     1         CLOSE_LLAVES             :?                                 ninguna                                           
+

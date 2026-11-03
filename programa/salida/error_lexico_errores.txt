@@ -1,0 +1,10 @@
+Se encontraron 9 error(es):
+ERROR LÉXICO: Caracter no reconocido '@' en la línea 2, columna 5
+ERROR LÉXICO: Caracter no reconocido '"' en la línea 4, columna 20
+ERROR SINTÁCTICO: Se encontró 'cerrar' en la línea 4, columna 25
+ERROR LÉXICO: Caracter no reconocido ''' en la línea 5, columna 18
+ERROR LÉXICO: Caracter no reconocido ''' en la línea 5, columna 19
+ERROR SINTÁCTICO: Se encontró '»' en la línea 5, columna 21
+ERROR LÉXICO: Caracter no reconocido '.' en la línea 6, columna 22
+ERROR SINTÁCTICO: Se encontró '5' en la línea 6, columna 23
+ERROR LÉXICO: Caracter no reconocido '#' en la línea 7, columna 5

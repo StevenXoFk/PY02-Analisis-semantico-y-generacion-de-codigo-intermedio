@@ -1,0 +1,9 @@
+Curso: Compiladores e Intérpretes GR 60
+
+Semestre y año lectivo: II Semestre, 2026
+
+Estudiantes: Angelo Piedra Castro, Elian Trejos Quiros
+Carnés: 2024101262, 2024143262
+Número de proyecto programado: 1
+Fecha de entrega: 03/10/2026
+Estatus de la entrega: MuyBuena
