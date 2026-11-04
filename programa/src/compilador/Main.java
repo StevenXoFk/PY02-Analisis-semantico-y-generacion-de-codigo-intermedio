@@ -2,6 +2,7 @@ package compilador;
 
 import compilador.generated.Lexer;
 import compilador.generated.Parser;
+import compilador.simbolos.GestorTablas;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,15 +29,17 @@ public class Main {
         String nombreBase = archivoFuente.getName().replaceFirst("[.][^.]+$", "");
         Path rutaTokens  = Path.of("salida", nombreBase + "_tokens.txt");
         Path rutaErrores = Path.of("salida", nombreBase + "_errores.txt");
+        Path rutaSimbolos = Path.of("salida", nombreBase + "_simbolos.txt");
 
         System.out.println("Analizando: " + archivoFuente.getPath());
         System.out.println();
 
         ErrorReporter.limpiarErrores();
+        GestorTablas.reiniciar();
+        TokenReporter tokenReporter = new TokenReporter();
 
         try (Reader lector = new BufferedReader(new InputStreamReader(
-                new FileInputStream(archivoFuente), StandardCharsets.UTF_8));
-             TokenReporter tokenReporter = new TokenReporter(rutaTokens)) {
+                new FileInputStream(archivoFuente), StandardCharsets.UTF_8))) {
 
             Lexer lexer = new Lexer(lector);
             ReportingLexer reportingLexer = new ReportingLexer(lexer, tokenReporter);
@@ -49,6 +52,15 @@ public class Main {
         } catch (Throwable t) {
             ErrorReporter.sintactico(
                     "Error fatal durante el análisis: " + t.getMessage(), 0, 0);
+        }
+
+        GestorTablas.finalizar();
+        try {
+            tokenReporter.escribir(rutaTokens);
+            GestorTablas.escribirReporte(rutaSimbolos, tokenReporter.filasConstantes(),
+                    tokenReporter.filasReservadas());
+        } catch (Exception e) {
+            System.err.println("Error al guardar tokens o tablas de símbolos: " + e.getMessage());
         }
 
         ErrorReporter.mostrarErrores();
@@ -66,6 +78,7 @@ public class Main {
             System.exit(1);
         } else {
             System.out.println("El archivo se pudo ser generado con éxito, (archivo de tokens en " + rutaTokens.toString() + ")");
+            System.out.println("Tablas de símbolos en " + rutaSimbolos.toString());
             System.exit(0);
         }
     }

@@ -19,6 +19,9 @@ package compilador.generated;
 
 import java_cup.runtime.*;
 import compilador.ErrorReporter;
+import compilador.simbolos.Simbolo;
+import compilador.simbolos.TablaSimbolos;
+import compilador.simbolos.GestorTablas;
 
 parser code {:
     public void syntax_error(Symbol sim) {
@@ -82,14 +85,14 @@ non terminal elemento_programa_cm;
 non terminal elemento_programa;
 non terminal funcion;
 non terminal funcion_principal;
-non terminal tipo_retorno;
-non terminal lista_parametros;
-non terminal var_simple;
-non terminal var_arreglo;
-non terminal var_no_arreglo;
-non terminal tipo_arrays;
-non terminal tipo_no_arreglo;
-non terminal bloque;
+non terminal String tipo_retorno;
+non terminal java.util.ArrayList lista_parametros;
+non terminal Simbolo var_simple;
+non terminal Simbolo var_arreglo;
+non terminal Simbolo var_no_arreglo;
+non terminal String tipo_arrays;
+non terminal String tipo_no_arreglo;
+non terminal TablaSimbolos bloque;
 
 // Declaraciones y asignaciones
 non terminal declaracion_global;
@@ -98,7 +101,7 @@ non terminal creacion_asign;
 non terminal asignacion;
 non terminal creacion_arreglo;
 non terminal asignacion_arreglo;
-non terminal valores;
+non terminal Integer valores;
 non terminal valor_asignable;
 
 // Literales y accesos
@@ -166,37 +169,38 @@ non terminal expr_modulo;
 start with programa;
 
 // +_++++++++ Producciones ++++++++
-tipo_retorno ::= INT
-    | FLOAT
-    | CHAR
-    | BOOL;
+tipo_retorno ::= INT {: RESULT = "int"; :}
+    | FLOAT {: RESULT = "float"; :}
+    | CHAR {: RESULT = "char"; :}
+    | BOOL {: RESULT = "bool"; :};
 
-// tipo_var se separó en tipo_arrays y tipo_no_arreglo: con un solo
-// tipo_var, "val int" generaba conflicto reduce/reduce contra tipo_arrays.
-tipo_arrays ::= INT
-    | FLOAT;
+tipo_arrays ::= INT {: RESULT = "int"; :}
+    | FLOAT {: RESULT = "float"; :};
 
-tipo_no_arreglo ::= BOOL
-    | STRING
-    | CHAR;
+tipo_no_arreglo ::= BOOL {: RESULT = "bool"; :}
+    | STRING {: RESULT = "string"; :}
+    | CHAR {: RESULT = "char"; :};
 
-var_arreglo ::= tipo_arrays ID;
+var_arreglo ::= tipo_arrays:t ID:id {: RESULT = new Simbolo(id, t, idleft, idright); :};
 
-var_no_arreglo ::= tipo_no_arreglo ID;
+var_no_arreglo ::= tipo_no_arreglo:t ID:id {: RESULT = new Simbolo(id, t, idleft, idright); :};
 
-var_simple ::= var_arreglo
-    | var_no_arreglo;
+var_simple ::= var_arreglo:v {: v.setCategoria(Simbolo.Categoria.PARAMETRO); GestorTablas.declarar(v); RESULT = v; :}
+    | var_no_arreglo:v {: v.setCategoria(Simbolo.Categoria.PARAMETRO); GestorTablas.declarar(v); RESULT = v; :};
 
-lista_parametros ::= var_simple COMA lista_parametros
-    | var_simple;
+lista_parametros ::= var_simple:v COMA lista_parametros:l {: l.add(0, v); RESULT = l; :}
+    | var_simple:v {: RESULT = new java.util.ArrayList(); RESULT.add(v); :};
 
-bloque ::= OPEN_LLAVES lista_sentencias CLOSE_LLAVES
-    | OPEN_LLAVES error CLOSE_LLAVES;
+bloque ::= OPEN_LLAVES:a lista_sentencias CLOSE_LLAVES:c {: RESULT = GestorTablas.cerrarBloque(aleft, aright, cleft, cright); :}
+    | OPEN_LLAVES:a error CLOSE_LLAVES:c {: RESULT = GestorTablas.cerrarBloque(aleft, aright, cleft, cright); :};
 
-funcion ::= tipo_retorno ID OPEN_PAREN lista_parametros CLOSE_PAREN bloque
-    | tipo_retorno ID OPEN_PAREN CLOSE_PAREN bloque;
+funcion ::= tipo_retorno:t ID:id OPEN_PAREN:p lista_parametros:l CLOSE_PAREN bloque:b
+        {: GestorTablas.cerrarFuncion(b, id, idleft, idright, t, l, pleft, pright); :}
+    | tipo_retorno:t ID:id OPEN_PAREN:p CLOSE_PAREN bloque:b
+        {: GestorTablas.cerrarFuncion(b, id, idleft, idright, t, new java.util.ArrayList(), pleft, pright); :};
 
-funcion_principal ::= VOID PRINCIPAL OPEN_PAREN CLOSE_PAREN bloque;
+funcion_principal ::= VOID PRINCIPAL:id OPEN_PAREN:p CLOSE_PAREN bloque:b
+        {: GestorTablas.cerrarPrincipal(b, idleft, idright, pleft, pright); :};
 
 declaracion_global ::= creacion_simple
     | creacion_asign
@@ -208,7 +212,7 @@ elemento_programa ::= declaracion_global
 elemento_programa_cm ::= elemento_programa_cm elemento_programa
     | ;
 
-programa ::= elemento_programa_cm funcion_principal;
+programa ::= elemento_programa_cm funcion_principal {: GestorTablas.cerrarGlobal(); :};
 
 expr_retorno ::= expr_modulo
     | expr_relacional
@@ -265,20 +269,23 @@ valor_asignable ::= expr_modulo
     | expr_relacional
     | expr_logica;
 
-creacion_simple ::= VAL var_arreglo FIN_SENTENCIA
-    | VAL var_no_arreglo FIN_SENTENCIA;
+creacion_simple ::= VAL var_arreglo:v FIN_SENTENCIA {: GestorTablas.declarar(v); :}
+    | VAL var_no_arreglo:v FIN_SENTENCIA {: GestorTablas.declarar(v); :};
 
-creacion_asign ::= VAL var_arreglo ASIGN valor_asignable FIN_SENTENCIA
-    | VAL var_no_arreglo ASIGN valor_asignable FIN_SENTENCIA;
+creacion_asign ::= VAL var_arreglo:v ASIGN valor_asignable FIN_SENTENCIA
+        {: v.setInicializada(true); GestorTablas.declarar(v); :}
+    | VAL var_no_arreglo:v ASIGN valor_asignable FIN_SENTENCIA
+        {: v.setInicializada(true); GestorTablas.declarar(v); :};
 
 asignacion ::= ID ASIGN valor_asignable FIN_SENTENCIA;
 
-creacion_arreglo ::= VAL var_arreglo ASIGN OPEN_LLAVES valores CLOSE_LLAVES FIN_SENTENCIA;
+creacion_arreglo ::= VAL var_arreglo:v ASIGN OPEN_LLAVES valores:n CLOSE_LLAVES FIN_SENTENCIA
+        {: v.setCategoria(Simbolo.Categoria.ARREGLO); v.setDimension(n); v.setInicializada(true); GestorTablas.declarar(v); :};
 
 asignacion_arreglo ::= acceso_arreglo ASIGN valor_asignable FIN_SENTENCIA;
 
-valores ::= literal_numerico COMA valores
-    | literal_numerico;
+valores ::= literal_numerico COMA valores:n {: RESULT = n + 1; :}
+    | literal_numerico {: RESULT = 1; :};
 
 sentencia_expr ::= valor_asignable FIN_SENTENCIA;
 
@@ -371,16 +378,17 @@ condicion ::= OPEN_PAREN expr_relacional CLOSE_PAREN
     | OPEN_PAREN ID CLOSE_PAREN
     | OPEN_PAREN llamada_funcion CLOSE_PAREN;
 
-sent_elif ::= ELIF condicion bloque;
+sent_elif ::= ELIF:e condicion bloque:b {: GestorTablas.nombrar(b, "elif", eleft, eright); :};
 
 lista_elif ::= lista_elif sent_elif
     | ;
 
-sent_else ::= ELSE bloque;
+sent_else ::= ELSE:e bloque:b {: GestorTablas.nombrar(b, "else", eleft, eright); :};
 
-sent_if ::= IF condicion bloque lista_elif sent_else
-    | IF condicion bloque lista_elif;
+sent_if ::= IF:i condicion bloque:b lista_elif sent_else {: GestorTablas.nombrar(b, "if", ileft, iright); :}
+    | IF:i condicion bloque:b lista_elif {: GestorTablas.nombrar(b, "if", ileft, iright); :};
 
-sent_while ::= WHILE condicion bloque;
+sent_while ::= WHILE:w condicion bloque:b {: GestorTablas.nombrar(b, "while", wleft, wright); :};
 
-sent_for ::= FOR sentencia_var condicion FIN_SENTENCIA expr_incremento bloque;
+sent_for ::= FOR:f sentencia_var condicion FIN_SENTENCIA expr_incremento bloque:b
+        {: GestorTablas.cerrarFor(b, fleft, fright); :};

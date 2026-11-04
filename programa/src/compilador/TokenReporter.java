@@ -1,54 +1,131 @@
 package compilador;
 import compilador.generated.sym;
+import compilador.simbolos.GestorTablas;
 import java_cup.runtime.Symbol;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Clase que permite registrar los tokens generados por el lexer y escribirlos en un archivo.
- * Implementa AutoCloseable para asegurar el cierre del BufferedWriter al finalizar su uso.
- * @Entrada: Ruta del archivo donde se registrarán los tokens.
- * @Salida: Tokens generados por el lexer, registrados en el archivo especificado.
+ * Clase que registra los tokens generados por el lexer y los escribe en un archivo, indicando
+ * para cada token en cuál tabla de símbolos va y qué información se almacena.
+ * Los tokens se guardan en memoria mientras se analiza y el archivo se escribe DESPUÉS del
+ * parse, porque el alcance de cada identificador solo se conoce cuando el parser ya armó las
+ * tablas de símbolos (GestorTablas).
+ * @Entrada: Tokens generados por el lexer (vía ReportingLexer) y, al escribir, la ruta del archivo.
+ * @Salida: Archivo de tokens con columnas Linea, Columna, Token, Lexema, Tabla, Info; además
+ *          las filas de la tabla de constantes y de la tabla de palabras reservadas.
  * @Restricciones:
  * - La ruta del archivo debe ser válida y accesible para escritura.
- * - El lexer debe estar correctamente generado y disponible en el classpath.
- * @Objetivo: Proporcionar un mecanismo para registrar los tokens generados por el lexer
- * y almacenarlos en un archivo para su análisis posterior.
+ * - escribir() debe llamarse después de GestorTablas.finalizar() para que los ID tengan su tabla.
+ * @Objetivo: Por cada token indicar su tabla de
+ *            símbolos y la información que se almacena.
  */
-public class TokenReporter implements AutoCloseable {
-    private final BufferedWriter writer;
-    private static final String FORMATO = "%-8s%-10s%-25s%-35s%-20s%-30s%n";
+public class TokenReporter {
+    private static final String FORMATO = "%-8s%-10s%-18s%-30s%-30s%s%n";
+    private static class TokenLeido {
+        final int sym;
+        final int linea;
+        final int columna;
+        final String lexema;
 
-    public TokenReporter(Path ruta) throws IOException {
+        TokenLeido(int sym, int linea, int columna, String lexema) {
+            this.sym = sym;
+            this.linea = linea;
+            this.columna = columna;
+            this.lexema = lexema;
+        }
+    }
+
+    private final List<TokenLeido> tokens = new ArrayList<>();
+
+    /**
+     * Registra un token generado por el lexer (solo lo guarda en memoria).
+     * @Entrada: Token generado por el lexer.
+     * @Salida: El token queda en la lista para escribirse después del parse.
+     */
+    public void register(Symbol token) {
+        if (token == null || token.sym == sym.EOF) {
+            return;
+        }
+        String lexema = token.value != null ? token.value.toString() : "";
+        tokens.add(new TokenLeido(token.sym, token.left, token.right, lexema));
+    }
+
+    /**
+     * Escribe el archivo de tokens con la tabla y la información de cada uno.
+     * @Entrada: Ruta del archivo.
+     * @Salida: Archivo de tokens; los ID se resuelven con GestorTablas.resolver().
+     */
+    public void escribir(Path ruta) throws IOException {
         Path carpeta = ruta.getParent();
         if (carpeta != null) {
             Files.createDirectories(carpeta);
         }
-        writer = Files.newBufferedWriter(ruta, StandardCharsets.UTF_8);
-        writer.write(String.format(FORMATO,"Linea", "Columna", "Token", "Lexema", "Tabla", "Info"));
+        try (BufferedWriter writer = Files.newBufferedWriter(ruta, StandardCharsets.UTF_8)) {
+            writer.write(String.format(FORMATO, "Linea", "Columna", "Token", "Lexema", "Tabla", "Info"));
+            for (TokenLeido t : tokens) {
+                String tabla;
+                String info;
+                if (t.sym == sym.ID) {
+                    String[] r = GestorTablas.resolver(t.lexema, t.linea, t.columna);
+                    tabla = r[0];
+                    info = r[1];
+                } else {
+                    tabla = clasificarTabla(t.sym);
+                    info = construirInfo(t.sym, escape(t.lexema));
+                }
+                writer.write(String.format(FORMATO, t.linea, t.columna, sym.terminalNames[t.sym],
+                        escape(t.lexema), tabla, info));
+            }
+        }
     }
 
     /**
-     * Registra un token generado por el lexer en el archivo.
-     * @Entrada: Token generado por el lexer.
-     * @Salida: Se escribe el token en el archivo especificado.
+     * Filas de la tabla de constantes: cada literal distinto una sola vez.
+     * @Entrada: Ninguna.
+     * @Salida: filas {valor, tipo, primera posición, apariciones}.
      */
-    public void register(Symbol token) throws IOException {
-        if (token == null || token.sym == sym.EOF) {
-            return;
+    public List<String[]> filasConstantes() {
+        Map<String, String[]> filas = new LinkedHashMap<>();
+        Map<String, Integer> conteo = new LinkedHashMap<>();
+        for (TokenLeido t : tokens) {
+            String tipo = tipoLiteral(t.sym);
+            if (tipo == null) continue;
+            String clave = tipo + "|" + t.lexema;
+            filas.putIfAbsent(clave, new String[]{escape(t.lexema), tipo, "L" + t.linea + ":C" + t.columna, ""});
+            conteo.merge(clave, 1, Integer::sum);
         }
+        for (Map.Entry<String, String[]> e : filas.entrySet()) {
+            e.getValue()[3] = String.valueOf(conteo.get(e.getKey()));
+        }
+        return new ArrayList<>(filas.values());
+    }
 
-        String nombreToken = sym.terminalNames[token.sym];
-        String lexema = token.value != null ? token.value.toString() : "";
-        lexema = escape(lexema);
-
-        String tabla = clasificarTabla(token.sym);
-        String info = construirInfo(token.sym, lexema);
-        
-        writer.write(String.format(FORMATO, token.left, token.right, nombreToken, lexema, tabla, info));
+    /**
+     * Filas de la tabla de palabras reservadas que aparecen en el fuente.
+     * @Entrada: Ninguna.
+     * @Salida: filas {lexema, token, primera posición, apariciones}.
+     */
+    public List<String[]> filasReservadas() {
+        Map<String, String[]> filas = new LinkedHashMap<>();
+        Map<String, Integer> conteo = new LinkedHashMap<>();
+        for (TokenLeido t : tokens) {
+            if (!"reservadas".equals(clasificarTabla(t.sym))) continue;
+            filas.putIfAbsent(t.lexema, new String[]{t.lexema, sym.terminalNames[t.sym],
+                    "L" + t.linea + ":C" + t.columna, ""});
+            conteo.merge(t.lexema, 1, Integer::sum);
+        }
+        for (Map.Entry<String, String[]> e : filas.entrySet()) {
+            e.getValue()[3] = String.valueOf(conteo.get(e.getKey()));
+        }
+        return new ArrayList<>(filas.values());
     }
 
     /**
@@ -63,9 +140,9 @@ public class TokenReporter implements AutoCloseable {
     }
 
     /**
-     * Construye información adicional sobre el token, como su tipo y valor.
-     * @Entrada: Código del token y su lexema.
-     * @Salida: Información adicional sobre el token.
+     * Indica la tabla de un token que no es identificador.
+     * @Entrada: Código del token.
+     * @Salida: "reservadas", "constantes" o "ninguna" (operadores y delimitadores no se guardan).
      */
     private String clasificarTabla(int symCode) {
         switch (symCode) {
@@ -86,10 +163,7 @@ public class TokenReporter implements AutoCloseable {
             case sym.BOOL:
             case sym.CHAR:
             case sym.STRING:
-                return "Reservadas";
-
-            case sym.ID:
-                return "Identificadores";
+                return "reservadas";
 
             case sym.LIT_INT:
             case sym.LIT_FLOAT:
@@ -97,38 +171,43 @@ public class TokenReporter implements AutoCloseable {
             case sym.LIT_STRING:
             case sym.TRUE:
             case sym.FALSE:
-                return "Constantes";
+                return "constantes";
 
             default:
                 return "ninguna";
         }
     }
-    
+
     /**
-     * Construye información adicional sobre el token, como su tipo y valor.
-     * @Entrada: Código del token y su lexema.
-     * @Salida: Información adicional sobre el token.
+     * Tipo de un literal.
+     * @Entrada: Código del token.
+     * @Salida: "int", "float", "char", "string", "bool" o null si no es literal.
      */
-    private String construirInfo(int symCode, String lexema) {
+    private String tipoLiteral(int symCode) {
         switch (symCode) {
-            case sym.LIT_INT:
-                return "valor=" + lexema + ", tipo=int";
-            case sym.LIT_FLOAT:
-                return "valor=" + lexema + ", tipo=float";
-            case sym.LIT_CHAR:
-                return "valor=" + lexema + ", tipo=char";
-            case sym.LIT_STRING:
-                return "valor=" + lexema + ", tipo=string";
+            case sym.LIT_INT: return "int";
+            case sym.LIT_FLOAT: return "float";
+            case sym.LIT_CHAR: return "char";
+            case sym.LIT_STRING: return "string";
             case sym.TRUE:
-            case sym.FALSE:
-                return "valor=" + lexema + ", tipo=bool";
-            default:
-                return "";
+            case sym.FALSE: return "bool";
+            default: return null;
         }
     }
 
-    @Override
-    public void close() throws IOException {
-        writer.close();
+    /**
+     * Construye la información que se almacena para un token que no es identificador.
+     * @Entrada: Código del token y su lexema.
+     * @Salida: valor y tipo para literales; "palabra reservada" u "operador/delimitador (no se almacena)".
+     */
+    private String construirInfo(int symCode, String lexema) {
+        String tipo = tipoLiteral(symCode);
+        if (tipo != null) {
+            return "valor=" + lexema + ", tipo=" + tipo;
+        }
+        if ("reservadas".equals(clasificarTabla(symCode))) {
+            return "palabra reservada";
+        }
+        return "operador/delimitador (no se almacena)";
     }
 }
