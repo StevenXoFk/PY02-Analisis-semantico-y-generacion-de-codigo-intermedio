@@ -111,7 +111,8 @@ public class Simbolo {
                 sb.append(inicializada ? "inicializada" : "sin inicializar");
                 break;
             case ARREGLO:
-                sb.append("dimensión ").append(dimension).append(", inicializado");
+                sb.append("dimensión ").append(dimension)
+                  .append(inicializada ? ", inicializado" : ", sin inicializar");
                 break;
             case PARAMETRO:
                 sb.append("recibido por valor");

@@ -16,7 +16,7 @@ val string TITULO Ͱ "Sistema de Notas" »
 val bool MODO_DEBUG Ͱ false »
 
 | -------- Datos globales --------
-val float notas Ͱ ¿: 0.0, 0.0, 0.0, 0.0, 0.0 :? »
+val float notas ʃ: 5 :ʅ Ͱ ¿: 0.0, 0.0, 0.0, 0.0, 0.0 :? »
 val int cantidad Ͱ 0 »
 
 | -------- Funciones auxiliares --------
@@ -122,7 +122,7 @@ int mostrar_menu є: :э ¿:
 int mostrar_notas є: int n :э ¿:
     if є: ʃ: n :ʅ == ʃ: 0 :ʅ :э ¿:
         write є: "No hay notas registradas." :э »
-        return »
+        return 0 »
     :?
     val int i Ͱ 0 »
     while є: ʃ: i :ʅ < ʃ: n :ʅ :э ¿:
@@ -270,6 +270,4 @@ void principal є: :э ¿:
     write є: "Aprobados: " :э »
     write є: total_aprobados :э »
     write є: "Fin del programa." :э »
-
-    return »
 :?

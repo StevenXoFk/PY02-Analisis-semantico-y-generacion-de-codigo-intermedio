@@ -2,7 +2,7 @@
 // Parser.cup
 //
 // @Entrada: Flujo de tokens del lexer
-// @Salida: 
+// @Salida:
 //   - Arbol de analisis sintactico.
 //   - Los errores sintacticos se reportan a compilador.ErrorReporter
 //
@@ -100,8 +100,10 @@ non terminal creacion_simple;
 non terminal creacion_asign;
 non terminal asignacion;
 non terminal creacion_arreglo;
+non terminal Integer dimension_arreglo;
 non terminal asignacion_arreglo;
 non terminal Integer valores;
+non terminal valor_arreglo;
 non terminal valor_asignable;
 
 // Literales y accesos
@@ -134,9 +136,13 @@ non terminal lista_elif;
 non terminal sent_else;
 non terminal sent_while;
 non terminal sent_for;
+non terminal for_inicio;
+non terminal for_condicion;
+non terminal for_actualizacion;
 
 // Expresiones Aritméticas
 non terminal expr_primaria;
+non terminal expr_parentesis;
 non terminal expr_negativo;
 non terminal expr_potencia;
 non terminal expr_aditiva;
@@ -149,17 +155,14 @@ non terminal llamada_funcion;
 // Relacionales - Lógicos
 non terminal op_orden;
 non terminal op_igualdad;
-
-// operando_rel_orden y operando_rel_igualdad se unificaron en operando_rel
-// porque ambos eran expr_modulo y generaban conflictos reduce/reduce.
 non terminal operando_rel;
-
 non terminal expr_rel_orden;
 non terminal expr_rel_igualdad;
 non terminal expr_relacional;
 non terminal op_logico;
 non terminal operando_logico;
 non terminal expr_negacion;
+non terminal cadena_logica;
 non terminal expr_logica;
 
 
@@ -172,7 +175,8 @@ start with programa;
 tipo_retorno ::= INT {: RESULT = "int"; :}
     | FLOAT {: RESULT = "float"; :}
     | CHAR {: RESULT = "char"; :}
-    | BOOL {: RESULT = "bool"; :};
+    | BOOL {: RESULT = "bool"; :}
+    | STRING {: RESULT = "string"; :};
 
 tipo_arrays ::= INT {: RESULT = "int"; :}
     | FLOAT {: RESULT = "float"; :};
@@ -206,17 +210,19 @@ declaracion_global ::= creacion_simple
     | creacion_asign
     | creacion_arreglo;
 
+// Recuperacion de errores en globales y encabezados de funcion.
 elemento_programa ::= declaracion_global
-    | funcion;
+    | funcion
+    | error FIN_SENTENCIA
+    | error bloque;
 
 elemento_programa_cm ::= elemento_programa_cm elemento_programa
     | ;
 
-programa ::= elemento_programa_cm funcion_principal {: GestorTablas.cerrarGlobal(); :};
+// principal puede ir en cualquier posicion.
+programa ::= elemento_programa_cm funcion_principal elemento_programa_cm {: GestorTablas.cerrarGlobal(); :};
 
-expr_retorno ::= expr_modulo
-    | expr_relacional
-    | expr_logica;
+expr_retorno ::= valor_asignable;
 
 expr_modulo ::= expr_modulo OP_MODULO expr_multiplicativa
     | expr_multiplicativa;
@@ -241,13 +247,16 @@ expr_primaria ::= literal
     | acceso_arreglo
     | llamada_funcion
     | expr_incremento
-    | OPEN_PAREN expr_modulo CLOSE_PAREN;
+    | expr_parentesis;
+
+// Parentesis para agrupar y para operandos logicos.
+expr_parentesis ::= OPEN_PAREN valor_asignable CLOSE_PAREN;
 
 
 literal_numerico ::= LIT_INT
     | LIT_FLOAT;
 
-argumento_funcion ::= expr_modulo;
+argumento_funcion ::= valor_asignable;
 
 lista_argumentos_funcion ::= argumento_funcion COMA lista_argumentos_funcion
     | argumento_funcion;
@@ -279,13 +288,21 @@ creacion_asign ::= VAL var_arreglo:v ASIGN valor_asignable FIN_SENTENCIA
 
 asignacion ::= ID ASIGN valor_asignable FIN_SENTENCIA;
 
-creacion_arreglo ::= VAL var_arreglo:v ASIGN OPEN_LLAVES valores:n CLOSE_LLAVES FIN_SENTENCIA
-        {: v.setCategoria(Simbolo.Categoria.ARREGLO); v.setDimension(n); v.setInicializada(true); GestorTablas.declarar(v); :};
+// Arreglo con tamaño, con o sin valores.
+dimension_arreglo ::= OPEN_BRACKET LIT_INT:n CLOSE_BRACKET {: RESULT = Integer.parseInt(n); :};
+
+creacion_arreglo ::= VAL var_arreglo:v dimension_arreglo:d FIN_SENTENCIA
+        {: v.setCategoria(Simbolo.Categoria.ARREGLO); v.setDimension(d); GestorTablas.declarar(v); :}
+    | VAL var_arreglo:v dimension_arreglo:d ASIGN OPEN_LLAVES valores CLOSE_LLAVES FIN_SENTENCIA
+        {: v.setCategoria(Simbolo.Categoria.ARREGLO); v.setDimension(d); v.setInicializada(true); GestorTablas.declarar(v); :};
 
 asignacion_arreglo ::= acceso_arreglo ASIGN valor_asignable FIN_SENTENCIA;
 
-valores ::= literal_numerico COMA valores:n {: RESULT = n + 1; :}
-    | literal_numerico {: RESULT = 1; :};
+valor_arreglo ::= literal_numerico
+    | OP_RESTA literal_numerico;
+
+valores ::= valor_arreglo COMA valores:n {: RESULT = n + 1; :}
+    | valor_arreglo {: RESULT = 1; :};
 
 sentencia_expr ::= valor_asignable FIN_SENTENCIA;
 
@@ -294,12 +311,9 @@ expr_incremento ::= ID OP_INCREMENTO
 
 arg_read ::= ID;
 
-arg_write ::= LIT_STRING
-    | LIT_CHAR
-    | LIT_INT
-    | LIT_FLOAT
-    | TRUE
-    | FALSE
+// write solo recibe literales o variables.
+arg_write ::= literal
+    | OP_RESTA literal_numerico
     | ID
     | acceso_arreglo;
 
@@ -307,8 +321,8 @@ sent_read ::= READ OPEN_PAREN arg_read CLOSE_PAREN FIN_SENTENCIA;
 
 sent_write ::= WRITE OPEN_PAREN arg_write CLOSE_PAREN FIN_SENTENCIA;
 
-sent_return ::= RETURN expr_retorno FIN_SENTENCIA
-    | RETURN FIN_SENTENCIA;
+// return siempre con expresion.
+sent_return ::= RETURN expr_retorno FIN_SENTENCIA;
 
 sent_break ::= BREAK FIN_SENTENCIA;
 
@@ -326,10 +340,13 @@ sentencia ::= sentencia_var
     | sent_write
     | sent_if
     | sent_while
-    | sent_for;
+    | sent_for
+    | bloque;
 
+// error bloque: recupera sentencias mal formadas con bloque (ej. else sin if).
 lista_sentencias ::= sentencia lista_sentencias
     | error FIN_SENTENCIA lista_sentencias
+    | error bloque lista_sentencias
     | ;
 
 op_orden ::= OP_MAYOR
@@ -341,13 +358,12 @@ op_igualdad ::= OP_IGUAL
     | OP_DIFERENTE;
 
 
-// Unificado desde operando_rel_orden y operando_rel_igualdad
-// para eliminar conflictos reduce/reduce.
-operando_rel ::= expr_modulo;
+// Permite anidar relacionales dentro de los corchetes.
+operando_rel ::= OPEN_BRACKET valor_asignable CLOSE_BRACKET;
 
-expr_rel_orden ::= OPEN_BRACKET operando_rel CLOSE_BRACKET op_orden OPEN_BRACKET operando_rel CLOSE_BRACKET;
+expr_rel_orden ::= operando_rel op_orden operando_rel;
 
-expr_rel_igualdad ::= OPEN_BRACKET operando_rel CLOSE_BRACKET op_igualdad OPEN_BRACKET operando_rel CLOSE_BRACKET;
+expr_rel_igualdad ::= operando_rel op_igualdad operando_rel;
 
 expr_relacional ::= expr_rel_orden
     | expr_rel_igualdad;
@@ -355,28 +371,22 @@ expr_relacional ::= expr_rel_orden
 op_logico ::= OP_AND
     | OP_OR;
 
-operando_logico ::= expr_relacional
-    | expr_negacion
-    | TRUE
-    | FALSE
-    | ID
-    | llamada_funcion;
-
-expr_negacion ::= OP_NEGACION OPEN_PAREN operando_logico CLOSE_PAREN;
-
-// El primer operando usa expr_modulo en vez de operando_logico
-// para evitar conflictos reduce/reduce con los paréntesis.
-expr_logica ::= OPEN_PAREN expr_relacional CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
-    | OPEN_PAREN expr_negacion CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
-    | OPEN_PAREN expr_modulo CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
+// Operando logico: entre parentesis o negacion.
+operando_logico ::= expr_parentesis
     | expr_negacion;
 
-condicion ::= OPEN_PAREN expr_relacional CLOSE_PAREN
-    | OPEN_PAREN expr_logica CLOSE_PAREN
-    | OPEN_PAREN TRUE CLOSE_PAREN
-    | OPEN_PAREN FALSE CLOSE_PAREN
-    | OPEN_PAREN ID CLOSE_PAREN
-    | OPEN_PAREN llamada_funcion CLOSE_PAREN;
+expr_negacion ::= OP_NEGACION expr_parentesis;
+
+// Permite encadenar operandos logicos.
+cadena_logica ::= cadena_logica op_logico operando_logico
+    | operando_logico op_logico operando_logico;
+
+expr_logica ::= cadena_logica
+    | expr_negacion;
+
+// Recuperacion de errores dentro de la condicion.
+condicion ::= OPEN_PAREN valor_asignable CLOSE_PAREN
+    | OPEN_PAREN error CLOSE_PAREN;
 
 sent_elif ::= ELIF:e condicion bloque:b {: GestorTablas.nombrar(b, "elif", eleft, eright); :};
 
@@ -390,5 +400,17 @@ sent_if ::= IF:i condicion bloque:b lista_elif sent_else {: GestorTablas.nombrar
 
 sent_while ::= WHILE:w condicion bloque:b {: GestorTablas.nombrar(b, "while", wleft, wright); :};
 
-sent_for ::= FOR:f sentencia_var condicion FIN_SENTENCIA expr_incremento bloque:b
+// for є: inicio » condicion » actualizacion :э
+for_inicio ::= VAL var_arreglo:v ASIGN valor_asignable
+        {: v.setInicializada(true); GestorTablas.declarar(v); :}
+    | VAL var_no_arreglo:v ASIGN valor_asignable
+        {: v.setInicializada(true); GestorTablas.declarar(v); :}
+    | ID ASIGN valor_asignable;
+
+for_condicion ::= valor_asignable;
+
+for_actualizacion ::= expr_modulo
+    | ID ASIGN expr_modulo;
+
+sent_for ::= FOR:f OPEN_PAREN for_inicio FIN_SENTENCIA for_condicion FIN_SENTENCIA for_actualizacion CLOSE_PAREN bloque:b
         {: GestorTablas.cerrarFor(b, fleft, fright); :};
