@@ -66,7 +66,11 @@ Proyecto #1
     │       ├── Main.java
     │       ├── ReportingLexer.java
     │       ├── TokenReporter.java
-    │       └── PruebaLexer.java
+    │       ├── PruebaLexer.java
+    │       └── simbolos/
+    │           ├── Simbolo.java
+    │           ├── TablaSimbolos.java
+    │           └── GestorTablas.java
     │
     ├── tests/
     │   ├── validos/
@@ -123,12 +127,17 @@ Para cada archivo analizado `<nombre>.txt` se generan los siguientes resultados.
 | Columna | Columna donde aparece el token |
 | Token | Nombre del terminal |
 | Lexema | Texto reconocido |
-| Tabla | Tabla de símbolos a la que pertenece |
-| Info | Información almacenada |
+| Tabla | Tabla de símbolos a la que pertenece. Para un identificador es el alcance donde aparece (`global`, `función f`, `principal`, `if (L25:C13)`, `while (…)`, `for (…)`…); para literales `constantes`; para palabras reservadas `reservadas`; operadores y delimitadores `ninguna`. |
+| Info | Información almacenada. Identificadores: si es **declaración** (categoría y tipo) o **uso** (a qué declaración se refiere, buscando del alcance actual hacia afuera). Literales: valor y tipo. |
 
-**2. `programa/salida/<nombre>_errores.txt`:** lista de errores léxicos y sintácticos, ordenados por línea y columna.
+**2. `programa/salida/<nombre>_simbolos.txt`:** las tablas de símbolos.
+- Una tabla por alcance, indentada por nivel, con nombre, padre y rango en el fuente; columnas Lexema, Categoría (variable, arreglo, parámetro, función, principal), Tipo, Línea, Col e Información (inicialización, dimensión del arreglo, tipo de retorno y parámetros de las funciones, redeclaración).
+- Tabla de constantes (cada literal una vez, con tipo, primera aparición y cantidad de apariciones).
+- Tabla de palabras reservadas que aparecen en el fuente.
 
-**3. Consola:** se imprimen los errores encontrados y un veredicto final:
+**3. `programa/salida/<nombre>_errores.txt`:** lista de errores léxicos y sintácticos, ordenados por línea y columna.
+
+**4. Consola:** se imprimen los errores encontrados y un veredicto final:
 
 - Con errores: `El archivo no puede ser generado por la gramática.` (revisar `salida/<nombre>_errores.txt`).
 - Sin errores: `El archivo se pudo generar con éxito.` (archivo de tokens en `salida/<nombre>_tokens.txt`).
@@ -181,13 +190,25 @@ Decisiones de diseño:
 - **Separación de `tipo_arrays` y `tipo_no_arreglo`:** elimina un conflicto reduce/reduce (con un solo `tipo_var`, CUP no podía decidir si `val int x` era variable simple o arreglo con un token de anticipación).
 - **Recuperación en modo pánico:** `lista_sentencias` incluye `error FIN_SENTENCIA lista_sentencias` y `bloque` incluye `OPEN_LLAVES error CLOSE_LLAVES`, de modo que el parser continúa y reporta los errores de las líneas siguientes.
 
+### Tabla de símbolos — acciones de `Parser.cup` + `src/compilador/simbolos/`
+
+- **Una tabla por alcance, encadenada con su padre** (como el `Env` de la Lectura 05): `global` → `función f` / `principal` → `if`, `elif`, `else`, `while`, `for`. Buscar un nombre recorre la cadena hacia afuera (regla del bloque anidado más cercano).
+- **Alcances:** los parámetros y el cuerpo de una función forman un solo alcance (desde `є:`); la variable del encabezado de un `for` pertenece al alcance del `for`; cada función se declara en la tabla `global` con su tipo de retorno y sus parámetros.
+- **Construcción al cerrar cada alcance:** como CUP es bottom-up, las declaraciones se reducen en el orden del fuente. Cada declaración se apila como *pendiente* (`GestorTablas.declarar`); al reducirse un `bloque` se sacan de la pila los pendientes que están después de su `¿:` y se arma su tabla (`cerrarBloque`), que queda pendiente para el alcance que la contiene. `sent_if`, `sent_while`, `sent_for`, `funcion`, `funcion_principal` y `programa` nombran o completan esa tabla.
+- **Por qué no se abre el alcance al entrar** (con `pushScope` a mitad de producción): en esta gramática una acción a mitad de `bloque` genera un conflicto shift/reduce con la alternativa `OPEN_LLAVES error CLOSE_LLAVES`, y en `sent_if` un conflicto reduce/reduce porque sus dos alternativas comparten el prefijo. Con acciones solo al final de las producciones existentes la gramática sigue con 0 conflictos y no se agregó ninguna producción.
+- **Información, no errores:** una redeclaración en el mismo alcance o un uso sin declaración visible se informan en las tablas, pero no se reportan como error (eso corresponde al análisis semántico del Proyecto 2).
+- Si el análisis sintáctico no termina, las tablas se cierran con lo reconocido y el reporte indica que son parciales.
+
 ### Clases Java (`src/compilador/`)
 
 | Clase | Responsabilidad |
 |---|---|
 | `Main` | Valida la ruta, lee el archivo en UTF-8, crea `Lexer`, `ReportingLexer` y `Parser`, ejecuta `parser.parse()` dentro de `try/catch`, guarda los errores y emite el veredicto. |
 | `ErrorReporter` | Acumula errores léxicos, sintácticos y semánticos; los ordena por línea y columna; los imprime en consola y los guarda en archivo UTF-8; devuelve el total. |
-| `TokenReporter` | Escribe el archivo de tokens (6 columnas) y clasifica cada token en una tabla de símbolos: *Reservadas*, *Identificadores*, *Constantes* (literales numéricos, char, string y booleanos) o *Ninguna* (operadores, delimitadores, EOF). |
+| `TokenReporter` | Guarda los tokens durante el análisis y, al terminar el parse, escribe el archivo de tokens (6 columnas) con la tabla y la información reales de cada token; también arma las filas de las tablas de constantes y de reservadas. |
+| `simbolos.Simbolo` | Entrada de la tabla: lexema, categoría, tipo, línea, columna, inicialización, dimensión, parámetros, redeclaración. |
+| `simbolos.TablaSimbolos` | Tabla de un alcance: padre, hijas, rango en el fuente, `agregar`, `buscarLocal`, `buscar` (recorre los padres), `tablaMasInterna`. |
+| `simbolos.GestorTablas` | Pila de pendientes que usan las acciones del parser para armar las tablas, resolución de cada ID a su tabla y escritura de `<nombre>_simbolos.txt`. |
 | `ReportingLexer` | Envuelve el lexer generado por JFlex y registra cada token en el `TokenReporter` antes de entregarlo al parser. |
 | `PruebaLexer` | Utilidad para probar el analizador léxico de forma aislada. |
 
@@ -219,7 +240,8 @@ Decisiones de diseño:
 - Estructuras de control (`if`, `else`, `elif`, `while`, `for`).
 - Arreglos con creación, acceso y modificación.
 - Recuperación en modo pánico.
-- Archivo de tokens con 6 columnas y tabla de símbolos (reservadas, identificadores, constantes).
+- Archivo de tokens con 6 columnas, indicando por cada token su tabla de símbolos y la información almacenada.
+- Tablas de símbolos por alcance (global, funciones, principal, if/elif/else, while, for), encadenadas, más las tablas de constantes y reservadas (`<nombre>_simbolos.txt`).
 - Archivo de errores ordenado por línea y columna.
 
 ### Objetivos no alcanzados
