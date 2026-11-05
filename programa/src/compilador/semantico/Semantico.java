@@ -268,12 +268,33 @@ public final class Semantico {
     }
 
     /**
-     * Validaciones que se hacen una vez sobre el árbol completo: unicidad 
-     * y un único principal.
+     * Validaciones que se hacen una vez sobre el árbol completo: unicidad.
      * @Entrada: Ninguna (usa el contexto).
      * @Salida: errores reportados.
+     * @Restricciones: el único principal ya lo exige la gramática (error sintáctico).
      */
     public static void validarDeclaraciones() {
+        if (!activo()) {
+            return;
+        }
+        revisarTabla(contexto);
+    }
+
+    /**
+     * Reporta los símbolos redeclarados de una tabla y de sus tablas hijas.
+     * @Entrada: tabla a revisar.
+     * @Salida: un error semántico por cada redeclaración.
+     */
+    private static void revisarTabla(TablaSimbolos tabla) {
+        for (Simbolo simbolo : tabla.getSimbolos()) {
+            if (simbolo.isRedeclarada()) {
+                int lineaPrimera = simbolo.getPrimeraDeclaracion().getLinea();
+                ErrorReporter.semantico("Redeclaración de '" + simbolo.getLexema() + "' (primera declaración en la línea " + lineaPrimera + ")", simbolo.getColumna(), simbolo.getLinea());
+            }
+        }
+        for (TablaSimbolos hija : tabla.getHijos()) {
+            revisarTabla(hija);
+        }
     }
 
     /**

@@ -1,0 +1,36 @@
+| ============================================================
+| Objetivo: verificar que no se redeclaren nombres en el mismo alcance.
+| Resultado esperado: 4 errores semánticos, en las líneas 14, 19, 23 y 35.
+|   L14: 'total' ya está declarada (variable global vs función)
+|   L19: 'x' ya está declarada (parámetro redeclarado en el cuerpo)
+|   L23: 'doble' ya está declarada (dos funciones con el mismo nombre)
+|   L35: 'a' ya está declarada (dos veces en el mismo bloque)
+| Válidos: 'y' en el if y en el else, y 'total' local en principal (shadowing).
+| ============================================================
+
+val int total Ͱ 0 »
+
+| Función con el mismo nombre que la global
+int total є: :э ¿:
+    return 1 »
+:?
+
+int doble є: int x :э ¿:
+    val int x Ͱ 5 »
+    return x * 2 »
+:?
+
+int doble є: :э ¿:
+    return 0 »
+:?
+
+void principal є: :э ¿:
+    val int total Ͱ 3 »
+    if є: true :э ¿:
+        val int y Ͱ 1 »
+    :? else ¿:
+        val int y Ͱ 2 »
+    :?
+    val int a Ͱ 1 »
+    val int a Ͱ 2 »
+:?

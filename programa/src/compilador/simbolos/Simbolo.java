@@ -71,6 +71,7 @@ public class Simbolo {
     public int getDimension() { return dimension; }
     public List<Simbolo> getParametros() { return parametros; }
     public boolean isRedeclarada() { return redeclarada; }
+    public Simbolo getPrimeraDeclaracion() { return primeraDeclaracion; }
     public TablaSimbolos getAlcance() { return alcance; }
 
     public void setCategoria(Categoria categoria) { this.categoria = categoria; }
