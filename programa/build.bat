@@ -16,7 +16,7 @@ java -jar lib\jflex-full-1.9.1.jar -d %GEN% --nobak spec\Lexer.flex
 if errorlevel 1 goto error
 
 echo [3/3] Compilando...
-javac -encoding UTF-8 -cp lib\java-cup-11b-runtime.jar -d bin src\compilador\*.java src\compilador\simbolos\*.java %GEN%\*.java
+javac -encoding UTF-8 -cp lib\java-cup-11b-runtime.jar -d bin src\compilador\*.java src\compilador\simbolos\*.java src\compilador\atributos\*.java src\compilador\semantico\*.java src\compilador\tac\*.java %GEN%\*.java
 if errorlevel 1 goto error
 
 echo.

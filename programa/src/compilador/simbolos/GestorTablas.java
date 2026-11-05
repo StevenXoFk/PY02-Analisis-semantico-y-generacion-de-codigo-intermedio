@@ -12,13 +12,9 @@ import java.util.Deque;
 import java.util.List;
 
 /**
- * Construye las tablas de símbolos desde las acciones del parser (Parser.cup), de forma
+ * Construye las tablas de símbolos desde las acciones del parser, de forma
  * procedural, y genera el reporte de tablas.
- *
- *
- * @Entrada: llamadas desde las acciones del parser (declarar, cerrarBloque, nombrar,
- *           cerrarFor, cerrarFuncion, cerrarPrincipal, cerrarGlobal) con las posiciones
- *           (left = línea, right = columna) de los tokens.
+ * @Entrada: llamadas desde las acciones del parser con las posiciones de los tokens.
  * @Salida: árbol de tablas de símbolos con raíz en la tabla global; resolución de cada ID a su
  *          tabla (resolver); archivo de reporte <nombre>_simbolos.txt (escribirReporte).
  * @Restricciones:
@@ -75,13 +71,13 @@ public final class GestorTablas {
 
     /**
      * Le pone nombre a la tabla de un bloque según la estructura que lo usa.
-     * @Entrada: tabla devuelta por el bloque, palabra de la estructura ("if", "elif", "else",
-     *           "while") y posición de esa palabra reservada.
-     * @Salida: la tabla queda nombrada, por ejemplo "while (L28:C5)".
+     * @Entrada: tabla devuelta por el bloque, palabra de la estructura y posición de esa palabra reservada.
+     * @Salida: la tabla queda nombrada.
      */
     public static void nombrar(TablaSimbolos t, String estructura, int linea, int columna) {
         if (t != null) {
             t.setNombre(estructura + " (L" + linea + ":C" + columna + ")");
+            t.setClase(TablaSimbolos.Clase.valueOf(estructura.toUpperCase()));
         }
     }
 
@@ -109,6 +105,7 @@ public final class GestorTablas {
         extender(t, lineaParen, colParen);
         if (t != null) {
             t.setNombre("función " + nombre);
+            t.setClase(TablaSimbolos.Clase.FUNCION);
         }
         Simbolo f = new Simbolo(nombre, tipoRetorno, linea, columna);
         f.setCategoria(Simbolo.Categoria.FUNCION);
@@ -125,6 +122,7 @@ public final class GestorTablas {
         extender(t, lineaParen, colParen);
         if (t != null) {
             t.setNombre("principal");
+            t.setClase(TablaSimbolos.Clase.PRINCIPAL);
         }
         Simbolo p = new Simbolo("principal", "void", linea, columna);
         p.setCategoria(Simbolo.Categoria.PRINCIPAL);
@@ -141,6 +139,7 @@ public final class GestorTablas {
         if (global == null) {
             completa = true;
             global = new TablaSimbolos("global", 0, TablaSimbolos.FIN_ARCHIVO);
+            global.setClase(TablaSimbolos.Clase.GLOBAL);
             global.agregarContenido(sacarDesde(Long.MIN_VALUE));
         }
         return global;
