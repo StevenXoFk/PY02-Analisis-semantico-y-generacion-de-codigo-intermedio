@@ -1,0 +1,264 @@
+package compilador.semantico;
+
+import compilador.atributos.Expr;
+import compilador.simbolos.Simbolo;
+import compilador.simbolos.TablaSimbolos;
+
+import java.util.List;
+
+/**
+ * Reglas del análisis semántico. Las acciones de Parser.cup llaman a estos métodos antes de
+ * llamar a GeneradorTAC: aquí se valida y se calcula el tipo; GeneradorTAC solo genera código.
+ *
+ * Se trabaja en dos pasadas: la pasada 1 arma el árbol de tablas de símbolos completo
+ * y la pasada 2 lo recibe en iniciar(). Con ese árbol se resuelve, para cualquier posición del
+ * fuente, en qué alcance está, qué nombres son visibles, a qué función pertenece un return y si
+ * un break está dentro de un ciclo, aunque el parser bottom-up todavía no haya cerrado esos
+ * alcances.
+ *
+ * @Entrada: atributos de las expresiones, nombres y posiciones (línea, columna) que pasan
+ *           las acciones del parser.
+ * @Salida: el tipo resultante de cada expresión y los errores
+ *          semánticos reportados en ErrorReporter.semantico(msj, columna, línea).
+ * @Restricciones:
+ * - Sin contexto (pasada 1) no valida ni reporta nada: activo() es false.
+ * - Si algún operando ya es de tipo "error" (o null por una producción error), el resultado es
+ *   "error" y no se reporta otro error (evita errores en cascada).
+ * @Objetivo: Implementar la comprobación de tipos, unicidad, declaración antes de uso, llamadas,
+ *            return y break.
+ */
+public final class Semantico {
+
+    private static TablaSimbolos contexto = null;
+
+    private Semantico() { }
+
+    /**
+     * Prepara la pasada 2 con el árbol de tablas de la pasada 1.
+     * @Entrada: tabla global de la pasada 1.
+     * @Salida: la semántica queda activa.
+     */
+    public static void iniciar(TablaSimbolos global) {
+        contexto = global;
+    }
+
+    /**
+     * Deja la semántica inactiva para la pasada 1.
+     * @Entrada: Ninguna.
+     * @Salida: sin contexto; ningún método valida.
+     */
+    public static void reiniciar() {
+        contexto = null;
+    }
+
+    /**
+     * Indica si se está en la pasada 2.
+     * @Entrada: Ninguna.
+     * @Salida: true si hay contexto para validar.
+     */
+    public static boolean activo() {
+        return contexto != null;
+    }
+
+    /**
+     * Resuelve un identificador usado en una expresión.
+     * @Entrada: nombre y posición del uso.
+     * @Salida: su declaración visible (buscarAntesDe en el alcance más interno), o null.
+     * @Restricciones: 
+     */
+    public static Simbolo usarVariable(String nombre, int linea, int columna) {
+        if (!activo()) {
+            return null;
+        }
+        long pos = TablaSimbolos.posicion(linea, columna);
+        TablaSimbolos t = contexto.tablaMasInterna(pos);
+        return (t != null ? t : contexto).buscarAntesDe(nombre, pos);
+    }
+
+    /**
+     * Tipo de un símbolo resuelto.
+     * @Entrada: símbolo (puede ser null).
+     * @Salida: su tipo, o "error" si no hay símbolo.
+     */
+    public static String tipoDe(Simbolo s) {
+        return s == null ? Expr.ERROR : s.getTipo();
+    }
+
+    /**
+     * Tipo de un literal.
+     * @Entrada: tipo del literal ("int", "float", "char", "string", "bool").
+     * @Salida: el mismo tipo.
+     */
+    public static String literal(String tipo) {
+        return tipo;
+    }
+
+    /**
+     * Operación binaria: aritmética, relacional o
+     * lógica.
+     * @Entrada: operandos, operador canónico y posición del operador.
+     * @Salida: tipo del resultado o "error".
+     * @Restricciones: 
+     */
+    public static String binaria(Expr a, String op, Expr b, int linea, int columna) {
+        if (Expr.esError(a) || Expr.esError(b)) {
+            return Expr.ERROR;
+        }
+        switch (op) {
+            case "<": case "<=": case ">": case ">=": case "==": case "!=":
+            case "λ": case "θ":
+                return "bool";
+            default:
+                return ("float".equals(a.getTipo()) || "float".equals(b.getTipo())) ? "float" : a.getTipo();
+        }
+    }
+
+    /**
+     * Operación unaria: negativo de un literal o negación lógica.
+     * @Entrada: operador, operando y posición del operador.
+     * @Salida: tipo del resultado o "error".
+     */
+    public static String unaria(String op, Expr a, int linea, int columna) {
+        if (Expr.esError(a)) {
+            return Expr.ERROR;
+        }
+        return "Σ".equals(op) ? "bool" : a.getTipo();
+    }
+
+    /**
+     * Incremento o decremento posfijo.
+     * @Entrada: nombre de la variable, operador y posición.
+     * @Salida: tipo de la variable o "error".
+     * @Restricciones:
+     */
+    public static String incremento(String nombre, String op, int linea, int columna) {
+        return tipoDe(usarVariable(nombre, linea, columna));
+    }
+
+    /**
+     * Acceso a un elemento de arreglo a[i].
+     * @Entrada: nombre del arreglo, expresión del índice y posición.
+     * @Salida: tipo del elemento o "error".
+     * @Restricciones: sábado: el nombre debe ser un arreglo y el índice int.
+     */
+    public static String acceso(String nombre, Expr indice, int linea, int columna) {
+        return tipoDe(usarVariable(nombre, linea, columna));
+    }
+
+    /**
+     * Llamada a función.
+     * @Entrada: nombre, argumentos en orden y posición.
+     * @Salida: tipo de retorno de la función o "error".
+     * @Restricciones: sábado: existe, mismo número, orden y tipo de argumentos.
+     */
+    public static String llamada(String nombre, List<Expr> argumentos, int linea, int columna) {
+        Simbolo f = usarVariable(nombre, linea, columna);
+        if (f == null || f.getCategoria() != Simbolo.Categoria.FUNCION) {
+            return Expr.ERROR;
+        }
+        return f.getTipo();
+    }
+
+    /**
+     * Asignación a una variable simple.
+     * @Entrada: nombre del destino, valor y posición del destino.
+     * @Salida: errores reportados si no son compatibles.
+     * @Restricciones: viernes: destino declarado, no arreglo ni función; compatible().
+     */
+    public static void asignacion(String nombre, Expr valor, int linea, int columna) {
+    }
+
+    /**
+     * Asignación a un elemento de arreglo.
+     * @Entrada: destino (Expr del acceso, con nombre e índice), valor y posición.
+     * @Salida: errores reportados si no son compatibles.
+     */
+    public static void asignacionArreglo(Expr destino, Expr valor, int linea, int columna) {
+    }
+
+    /**
+     * Creación de variable con o sin valor inicial.
+     * @Entrada: símbolo declarado y valor (null si no tiene).
+     * @Salida: errores reportados si el valor no es compatible.
+     */
+    public static void declaracion(Simbolo simbolo, Expr valor) {
+    }
+
+    /**
+     * Creación de arreglo.
+     * @Entrada: símbolo del arreglo (con su dimensión) y valores iniciales (lista vacía si no hay).
+     * @Salida: errores reportados (tamaño, cantidad o tipo de valores).
+     */
+    public static void creacionArreglo(Simbolo simbolo, List<Expr> valores) {
+    }
+
+    /**
+     * Condición de if, elif, while o for.
+     * @Entrada: expresión de la condición.
+     * @Salida: error si no es bool.
+     */
+    public static void condicion(Expr condicion) {
+    }
+
+    /**
+     * Tercera sección del for cuando es una expresión (no una asignación).
+     * @Entrada: expresión de la actualización.
+     * @Salida: error según la decisión pendiente (solo incremento o cualquier expresión).
+     */
+    public static void actualizacionFor(Expr actualizacion) {
+    }
+
+    /**
+     * Sentencia return.
+     * @Entrada: valor retornado y posición de "return".
+     * @Salida: error si no coincide con el tipo de la función que lo contiene o si está en principal.
+     */
+    public static void retorno(Expr valor, int linea, int columna) {
+    }
+
+    /**
+     * Sentencia break.
+     * @Entrada: posición de "break".
+     * @Salida: error si no hay un while o for que lo contenga dentro de la misma función.
+     */
+    public static void romper(int linea, int columna) {
+    }
+
+    /**
+     * Sentencia read.
+     * @Entrada: nombre de la variable y posición.
+     * @Salida: error si no es una variable int, float o char.
+     */
+    public static void leer(String nombre, int linea, int columna) {
+    }
+
+    /**
+     * Sentencia write.
+     * @Entrada: valor a escribir y posición de "write".
+     * @Salida: error si el tipo no se puede escribir.
+     */
+    public static void escribir(Expr valor, int linea, int columna) {
+    }
+
+    /**
+     * Validaciones que se hacen una vez sobre el árbol completo: unicidad 
+     * y un único principal.
+     * @Entrada: Ninguna (usa el contexto).
+     * @Salida: errores reportados.
+     */
+    public static void validarDeclaraciones() {
+    }
+
+    /**
+     * Regla única de compatibilidad de tipos (asignación, retorno, argumentos).
+     * @Entrada: tipo del destino y tipo del valor.
+     * @Salida: true si el valor puede guardarse en el destino.
+     * @Restricciones:.
+     */
+    public static boolean compatible(String destino, String origen) {
+        if (destino == null || origen == null) {
+            return false;
+        }
+        return destino.equals(origen) || ("float".equals(destino) && "int".equals(origen));
+    }
+}
