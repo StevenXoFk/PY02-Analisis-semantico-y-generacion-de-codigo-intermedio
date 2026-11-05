@@ -7,18 +7,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Tabla de símbolos de un alcance (global, función, if, elif, else, while o for).
- * @Entrada: nombre del alcance y su rango en el fuente (desde/hasta línea:columna); luego
+ * Tabla de símbolos de un alcance.
+ * @Entrada: nombre del alcance y su rango en el fuente; luego
  *           los símbolos y tablas hijas que GestorTablas le va agregando.
  * @Salida: Estructura consultable con buscarLocal(), buscar() y tablaMasInterna().
  * @Restricciones:
  * - Los símbolos se guardan en orden de declaración.
- * - El nivel se calcula a partir del padre (global = 0).
+ * - El nivel se calcula a partir del padre.
  * @Objetivo: Implementar la tabla de símbolos por alcance.
  */
 public class TablaSimbolos {
     public static final long FIN_ARCHIVO = Long.MAX_VALUE;
+    public enum Clase { GLOBAL, FUNCION, PRINCIPAL, IF, ELIF, ELSE, WHILE, FOR, BLOQUE }
 
+    private Clase clase = Clase.BLOQUE;
     private String nombre;
     private TablaSimbolos padre;
     private final List<TablaSimbolos> hijos = new ArrayList<>();
@@ -29,7 +31,7 @@ public class TablaSimbolos {
 
     /**
      * Crea una tabla vacía sin padre.
-     * @Entrada: nombre del alcance, posición de inicio y posición de fin (ver posicion()).
+     * @Entrada: nombre del alcance, posición de inicio y posición de fin.
      * @Salida: Tabla nueva.
      */
     public TablaSimbolos(String nombre, long inicio, long fin) {
@@ -78,7 +80,7 @@ public class TablaSimbolos {
     }
 
     /**
-     * Agrega una tabla hija (alcance anidado) y la enlaza con esta como padre.
+     * Agrega una tabla hija con anidación y la enlaza con esta como padre.
      * @Entrada: tabla del alcance anidado.
      * @Salida: la hija queda en la lista de hijos y su padre es esta tabla.
      */
@@ -88,8 +90,7 @@ public class TablaSimbolos {
     }
 
     /**
-     * Inserta, antes del contenido actual, símbolos y tablas que aparecen antes en el fuente
-     * (parámetros de una función o la variable del encabezado de un for).
+     * Inserta, antes del contenido actual, símbolos y tablas que aparecen antes en el fuente.
      * @Entrada: lista en orden del fuente con objetos Simbolo o TablaSimbolos.
      * @Salida: la tabla queda con el prefijo seguido de su contenido anterior, recalculando
      *          las marcas de redeclaración.
@@ -152,6 +153,46 @@ public class TablaSimbolos {
     }
 
     /**
+     * Busca la declaración visible de un nombre en una posición del fuente: recorre esta tabla
+     * y sus padres, y en cada una solo considera declaraciones hechas ANTES de esa posición. 
+     * Las funciones y principal son visibles en todo el archivo.
+     * @Entrada: lexema y posición codificada del uso.
+     * @Salida: la declaración visible más cercana, o null si no hay ninguna.
+     * @Restricciones: se usa sobre el árbol de la pasada 1, que ya está completo.
+     */
+    public Simbolo buscarAntesDe(String lexema, long pos) {
+        for (TablaSimbolos t = this; t != null; t = t.padre) {
+            for (Simbolo s : t.simbolos) {
+                if (!s.getLexema().equals(lexema)) {
+                    continue;
+                }
+                boolean subprograma = s.getCategoria() == Simbolo.Categoria.FUNCION
+                        || s.getCategoria() == Simbolo.Categoria.PRINCIPAL;
+                if (subprograma || s.getPosicion() < pos) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Busca el alcance más cercano de alguna de las clases dadas.
+     * @Entrada: clases buscadas.
+     * @Salida: la primera tabla, subiendo por los padres, cuya clase está en la lista; o null.
+     */
+    public TablaSimbolos ancestroDeClase(Clase... clases) {
+        for (TablaSimbolos t = this; t != null; t = t.padre) {
+            for (Clase c : clases) {
+                if (t.clase == c) {
+                    return t;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Busca el símbolo declarado exactamente en una posición dentro de esta tabla.
      * @Entrada: posición codificada del token ID.
      * @Salida: el símbolo cuya declaración está en esa posición, o null.
@@ -205,6 +246,8 @@ public class TablaSimbolos {
         return nivel;
     }
 
+    public Clase getClase() { return clase; }
+    void setClase(Clase clase) { this.clase = clase; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
     public TablaSimbolos getPadre() { return padre; }
