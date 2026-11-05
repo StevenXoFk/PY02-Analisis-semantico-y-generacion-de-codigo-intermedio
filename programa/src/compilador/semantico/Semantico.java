@@ -1,5 +1,6 @@
 package compilador.semantico;
 
+import compilador.ErrorReporter;
 import compilador.atributos.Expr;
 import compilador.simbolos.Simbolo;
 import compilador.simbolos.TablaSimbolos;
@@ -64,15 +65,37 @@ public final class Semantico {
      * Resuelve un identificador usado en una expresión.
      * @Entrada: nombre y posición del uso.
      * @Salida: su declaración visible (buscarAntesDe en el alcance más interno), o null.
-     * @Restricciones: 
+     * @Restricciones: reporta error si no está declarada antes del uso o si es una función.
      */
     public static Simbolo usarVariable(String nombre, int linea, int columna) {
         if (!activo()) {
             return null;
         }
+        // Alcance donde está el uso
         long pos = TablaSimbolos.posicion(linea, columna);
-        TablaSimbolos t = contexto.tablaMasInterna(pos);
-        return (t != null ? t : contexto).buscarAntesDe(nombre, pos);
+        TablaSimbolos alcance = contexto.tablaMasInterna(pos);
+        if (alcance == null) {
+            alcance = contexto;
+        }
+
+        Simbolo simbolo = alcance.buscarAntesDe(nombre, pos);
+
+        // No declarada (o declarada después del uso)
+        if (simbolo == null) {
+            ErrorReporter.semantico("La variable '" + nombre + "' no está declarada", columna, linea);
+            return null;
+        }
+
+        // Una función no se puede usar como variable
+        Simbolo.Categoria categoria = simbolo.getCategoria();
+        boolean esFuncion = categoria == Simbolo.Categoria.FUNCION
+                || categoria == Simbolo.Categoria.PRINCIPAL;
+        if (esFuncion) {
+            ErrorReporter.semantico("'" + nombre + "' es una función, no una variable", columna, linea);
+            return null;
+        }
+
+        return simbolo;
     }
 
     /**
@@ -152,7 +175,11 @@ public final class Semantico {
      * @Restricciones: sábado: existe, mismo número, orden y tipo de argumentos.
      */
     public static String llamada(String nombre, List<Expr> argumentos, int linea, int columna) {
-        Simbolo f = usarVariable(nombre, linea, columna);
+        if (!activo()) {
+            return Expr.ERROR;
+        }
+        // Las funciones son visibles en todo el archivo: se buscan desde la global
+        Simbolo f = contexto.buscarLocal(nombre);
         if (f == null || f.getCategoria() != Simbolo.Categoria.FUNCION) {
             return Expr.ERROR;
         }
