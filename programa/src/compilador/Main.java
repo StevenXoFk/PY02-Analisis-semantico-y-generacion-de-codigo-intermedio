@@ -63,12 +63,12 @@ public class Main {
         Semantico.reiniciar();
         GeneradorTAC.reiniciar();
         analizar(archivoFuente, null);
-        TablaSimbolos contexto = GestorTablas.finalizar();
+        TablaSimbolos tablaGlobal = GestorTablas.finalizar();
 
         // pass 2
         ErrorReporter.limpiarErrores();
         GestorTablas.reiniciar();
-        Semantico.iniciar(contexto);
+        Semantico.iniciar(tablaGlobal);
         GeneradorTAC.reiniciar();
         TokenReporter tokenReporter = new TokenReporter();
         Codigo programa = analizar(archivoFuente, tokenReporter);

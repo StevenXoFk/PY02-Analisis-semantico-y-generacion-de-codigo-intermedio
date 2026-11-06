@@ -22,7 +22,7 @@ import java.util.List;
  * @Salida: el tipo resultante de cada expresión y los errores
  *          semánticos reportados en ErrorReporter.semantico(msj, columna, línea).
  * @Restricciones:
- * - Sin contexto (pasada 1) no valida ni reporta nada: activo() es false.
+ * - En la pasada 1 no valida ni reporta nada: esSegundaPasada() es false.
  * - Si algún operando ya es de tipo "error" (o null por una producción error), el resultado es
  *   "error" y no se reporta otro error (evita errores en cascada).
  * @Objetivo: Implementar la comprobación de tipos, unicidad, declaración antes de uso, llamadas,
@@ -30,7 +30,7 @@ import java.util.List;
  */
 public final class Semantico {
 
-    private static TablaSimbolos contexto = null;
+    private static TablaSimbolos tablaGlobal = null;
 
     private Semantico() { }
 
@@ -40,25 +40,25 @@ public final class Semantico {
      * @Salida: la semántica queda activa.
      */
     public static void iniciar(TablaSimbolos global) {
-        contexto = global;
+        tablaGlobal = global;
     }
 
     /**
      * Deja la semántica inactiva para la pasada 1.
      * @Entrada: Ninguna.
-     * @Salida: sin contexto; ningún método valida.
+     * @Salida: sin tabla global; ningún método valida.
      */
     public static void reiniciar() {
-        contexto = null;
+        tablaGlobal = null;
     }
 
     /**
      * Indica si se está en la pasada 2.
      * @Entrada: Ninguna.
-     * @Salida: true si hay contexto para validar.
+     * @Salida: true si ya se tiene la tabla global de la pasada 1.
      */
-    public static boolean activo() {
-        return contexto != null;
+    public static boolean esSegundaPasada() {
+        return tablaGlobal != null;
     }
 
     /**
@@ -68,14 +68,14 @@ public final class Semantico {
      * @Restricciones: reporta error si no está declarada antes del uso o si es una función.
      */
     public static Simbolo usarVariable(String nombre, int linea, int columna) {
-        if (!activo()) {
+        if (!esSegundaPasada()) {
             return null;
         }
         // Alcance donde está el uso
         long pos = TablaSimbolos.posicion(linea, columna);
-        TablaSimbolos alcance = contexto.tablaMasInterna(pos);
+        TablaSimbolos alcance = tablaGlobal.tablaMasInterna(pos);
         if (alcance == null) {
-            alcance = contexto;
+            alcance = tablaGlobal;
         }
 
         Simbolo simbolo = alcance.buscarAntesDe(nombre, pos);
@@ -121,19 +121,68 @@ public final class Semantico {
      * lógica.
      * @Entrada: operandos, operador canónico y posición del operador.
      * @Salida: tipo del resultado o "error".
-     * @Restricciones: 
+     * @Restricciones: si un operando ya es "error" no se reporta otro error.
      */
     public static String binaria(Expr a, String op, Expr b, int linea, int columna) {
         if (Expr.esError(a) || Expr.esError(b)) {
             return Expr.ERROR;
         }
         switch (op) {
-            case "<": case "<=": case ">": case ">=": case "==": case "!=":
-            case "λ": case "θ":
+            // Relacionales
+            case "<":
+            case "<=":
+            case ">":
+            case ">=":
+            case "==":
+            case "!=":
                 return "bool";
+
+            // Lógicos: λ (and), θ (or)
+            case "λ":
+            case "θ":
+                return "bool";
+
+            // Aritméticos: + - * / // mod pot
             default:
-                return ("float".equals(a.getTipo()) || "float".equals(b.getTipo())) ? "float" : a.getTipo();
+                return aritmetica(a.getTipo(), op, b.getTipo(), linea, columna);
         }
+    }
+
+    /**
+     * Operación aritmética: + - * / // mod pot.
+     * @Entrada: tipo de cada operando, operador y posición del operador.
+     * @Salida: tipo del resultado o "error".
+     * @Restricciones: tipado estricto, no se mezclan int y float.
+     *                 + - * aceptan dos int o dos float; / igual pero siempre da float;
+     *                 // mod pot solo aceptan dos int.
+     */
+    private static String aritmetica(String tipoA, String op, String tipoB, int linea, int columna) {
+        if (!esSegundaPasada()) {
+            return Expr.ERROR;
+        }
+        boolean ambosInt = "int".equals(tipoA) && "int".equals(tipoB);
+        boolean ambosFloat = "float".equals(tipoA) && "float".equals(tipoB);
+
+        // División entera, módulo y potencia: solo int
+        if (op.equals("//") || op.equals("mod") || op.equals("pot")) {
+            if (ambosInt) {
+                return "int";
+            }
+            ErrorReporter.semantico("El operador '" + op + "' solo acepta int, se recibió " + tipoA + " y " + tipoB, columna, linea);
+            return Expr.ERROR;
+        }
+
+        // + - * /: dos int o dos float
+        if (!ambosInt && !ambosFloat) {
+            ErrorReporter.semantico("El operador '" + op + "' no se puede aplicar a " + tipoA + " y " + tipoB, columna, linea);
+            return Expr.ERROR;
+        }
+
+        // La división decimal siempre da float
+        if (op.equals("/")) {
+            return "float";
+        }
+        return tipoA;
     }
 
     /**
@@ -175,11 +224,11 @@ public final class Semantico {
      * @Restricciones: sábado: existe, mismo número, orden y tipo de argumentos.
      */
     public static String llamada(String nombre, List<Expr> argumentos, int linea, int columna) {
-        if (!activo()) {
+        if (!esSegundaPasada()) {
             return Expr.ERROR;
         }
         // Las funciones son visibles en todo el archivo: se buscan desde la global
-        Simbolo f = contexto.buscarLocal(nombre);
+        Simbolo f = tablaGlobal.buscarLocal(nombre);
         if (f == null || f.getCategoria() != Simbolo.Categoria.FUNCION) {
             return Expr.ERROR;
         }
@@ -194,7 +243,7 @@ public final class Semantico {
      *                 debe ser del mismo tipo.
      */
     public static void asignacion(String nombre, Expr valor, int linea, int columna) {
-        if (!activo()) {
+        if (!esSegundaPasada()) {
             return;
         }
         // usarVariable ya reporta si no existe o si es una función
@@ -229,7 +278,7 @@ public final class Semantico {
      * @Restricciones: si no hay valor o el valor ya tiene error, no se reporta nada.
      */
     public static void declaracion(Simbolo simbolo, Expr valor) {
-        if (!activo() || valor == null || Expr.esError(valor)) {
+        if (!esSegundaPasada() || valor == null || Expr.esError(valor)) {
             return;
         }
         if (!compatible(simbolo.getTipo(), valor.getTipo())) {
@@ -295,15 +344,15 @@ public final class Semantico {
 
     /**
      * Validaciones que se hacen una vez sobre el árbol completo: unicidad.
-     * @Entrada: Ninguna (usa el contexto).
+     * @Entrada: Ninguna (usa la tabla global).
      * @Salida: errores reportados.
      * @Restricciones: el único principal ya lo exige la gramática (error sintáctico).
      */
     public static void validarDeclaraciones() {
-        if (!activo()) {
+        if (!esSegundaPasada()) {
             return;
         }
-        revisarTabla(contexto);
+        revisarTabla(tablaGlobal);
     }
 
     /**
