@@ -190,9 +190,28 @@ public final class Semantico {
      * Asignación a una variable simple.
      * @Entrada: nombre del destino, valor y posición del destino.
      * @Salida: errores reportados si no son compatibles.
-     * @Restricciones: viernes: destino declarado, no arreglo ni función; compatible().
+     * @Restricciones: el destino debe estar declarado, no ser arreglo ni función, y el valor
+     *                 debe ser del mismo tipo.
      */
     public static void asignacion(String nombre, Expr valor, int linea, int columna) {
+        if (!activo()) {
+            return;
+        }
+        // usarVariable ya reporta si no existe o si es una función
+        Simbolo destino = usarVariable(nombre, linea, columna);
+        if (destino == null || Expr.esError(valor)) {
+            return;
+        }
+
+        // Un arreglo completo no se asigna, solo sus elementos
+        if (destino.getCategoria() == Simbolo.Categoria.ARREGLO) {
+            ErrorReporter.semantico("'" + nombre + "' es un arreglo; asigne a un elemento con " + nombre + " ʃ: indice :ʅ", columna, linea);
+            return;
+        }
+
+        if (!compatible(destino.getTipo(), valor.getTipo())) {
+            ErrorReporter.semantico("No se puede asignar un valor de tipo " + valor.getTipo() + " a '" + nombre + "' de tipo " + destino.getTipo(), columna, linea);
+        }
     }
 
     /**
@@ -207,8 +226,15 @@ public final class Semantico {
      * Creación de variable con o sin valor inicial.
      * @Entrada: símbolo declarado y valor (null si no tiene).
      * @Salida: errores reportados si el valor no es compatible.
+     * @Restricciones: si no hay valor o el valor ya tiene error, no se reporta nada.
      */
     public static void declaracion(Simbolo simbolo, Expr valor) {
+        if (!activo() || valor == null || Expr.esError(valor)) {
+            return;
+        }
+        if (!compatible(simbolo.getTipo(), valor.getTipo())) {
+            ErrorReporter.semantico("No se puede asignar un valor de tipo " + valor.getTipo() + " a '" + simbolo.getLexema() + "' de tipo " + simbolo.getTipo(), simbolo.getColumna(), simbolo.getLinea());
+        }
     }
 
     /**
@@ -301,12 +327,12 @@ public final class Semantico {
      * Regla única de compatibilidad de tipos (asignación, retorno, argumentos).
      * @Entrada: tipo del destino y tipo del valor.
      * @Salida: true si el valor puede guardarse en el destino.
-     * @Restricciones:.
+     * @Restricciones: tipado estricto, los tipos deben ser iguales (no hay coerción int a float).
      */
     public static boolean compatible(String destino, String origen) {
         if (destino == null || origen == null) {
             return false;
         }
-        return destino.equals(origen) || ("float".equals(destino) && "int".equals(origen));
+        return destino.equals(origen);
     }
 }
