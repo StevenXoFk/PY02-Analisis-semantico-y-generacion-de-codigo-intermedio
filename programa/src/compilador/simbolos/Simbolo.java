@@ -4,57 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entrada de una tabla de símbolos: guarda la información de un identificador declarado.
- * @Entrada: lexema, tipo y posición (línea, columna) del identificador en su declaración.
- *           La categoría, la dimensión, los parámetros y la inicialización se completan
- *           desde las acciones del parser según la producción que lo declaró.
- * @Salida: Objeto con la información del identificador, consultable por la tabla de símbolos
- *          y por los reportes (archivo de tokens y archivo de tablas de símbolos).
- * @Restricciones:
- * - La posición es la del token ID de la declaración (left = línea, right = columna del lexer).
- * - La dimensión solo aplica a ARREGLO; los parámetros y el tipo de retorno solo a FUNCION/PRINCIPAL.
- * @Objetivo: Representar la información que se almacena por cada identificador en la tabla de
- *            símbolos.
+ * Un identificador declarado en el programa (variable, arreglo, parámetro o función).
+ * @Entrada: lexema, tipo, línea y columna donde se declaró.
+ * @Salida: los datos del identificador que se guardan en la tabla de símbolos.
+ * @Restricciones: la dimensión solo se usa en arreglos y los parámetros solo en funciones.
+ * @Objetivo: guardar la información de cada identificador.
  */
 public class Simbolo {
 
-    /** Categoría del identificador según cómo fue declarado. */
-    public enum Categoria {
-        VARIABLE("variable"),
-        ARREGLO("arreglo"),
-        PARAMETRO("parámetro"),
-        FUNCION("función"),
-        PRINCIPAL("principal");
+    public enum Categoria { VARIABLE, ARREGLO, PARAMETRO, FUNCION, PRINCIPAL }
 
-        private final String texto;
-
-        Categoria(String texto) {
-            this.texto = texto;
-        }
-
-        @Override
-        public String toString() {
-            return texto;
-        }
-    }
-
-    private final String lexema;
-    private final String tipo;
-    private final int linea;
-    private final int columna;
+    private String lexema;
+    private String tipo;
+    private int linea;
+    private int columna;
     private Categoria categoria = Categoria.VARIABLE;
     private boolean inicializada = false;
-    private int dimension = -1;
+    private int dimension = 0;
     private List<Simbolo> parametros = new ArrayList<>();
     private boolean redeclarada = false;
     private Simbolo primeraDeclaracion = null;
     private TablaSimbolos alcance = null;
 
-    /**
-     * Crea un símbolo con categoría VARIABLE por defecto.
-     * @Entrada: lexema del ID, tipo ("int", "float", ...), línea y columna del ID.
-     * @Salida: Símbolo nuevo, todavía sin tabla asignada.
-     */
     public Simbolo(String lexema, String tipo, int linea, int columna) {
         this.lexema = lexema;
         this.tipo = tipo;
@@ -78,21 +49,21 @@ public class Simbolo {
     public void setInicializada(boolean inicializada) { this.inicializada = inicializada; }
     public void setDimension(int dimension) { this.dimension = dimension; }
     public void setParametros(List<Simbolo> parametros) { this.parametros = parametros; }
-    void setAlcance(TablaSimbolos alcance) { this.alcance = alcance; }
+    public void setAlcance(TablaSimbolos alcance) { this.alcance = alcance; }
 
     /**
-     * Marca el símbolo como redeclarado en su mismo alcance.
-     * @Entrada: la primera declaración del mismo nombre en esa tabla.
-     * @Salida: el símbolo queda marcado y apunta a la primera declaración.
+     * Marca el símbolo como repetido dentro de su mismo alcance.
+     * @Entrada: la primera declaración con el mismo nombre.
+     * @Salida: el símbolo queda marcado.
      */
-    void marcarRedeclarada(Simbolo primera) {
-        this.redeclarada = true;
-        this.primeraDeclaracion = primera;
+    public void marcarRedeclarada(Simbolo primera) {
+        redeclarada = true;
+        primeraDeclaracion = primera;
     }
 
     /**
-     * Posición del símbolo codificada en un solo número para compararla con otras posiciones.
-     * @Entrada: Ninguna.
+     * Posicion del símbolo como un solo número, para poder compararla.
+     * @Entrada: ninguna.
      * @Salida: línea * 100000 + columna.
      */
     public long getPosicion() {
@@ -100,69 +71,35 @@ public class Simbolo {
     }
 
     /**
-     * Construye la columna "Información" del reporte de tablas.
-     * @Entrada: Ninguna.
-     * @Salida: Texto con la información propia de la categoría (inicialización, dimensión,
-     *          firma de la función) y la marca de redeclaración si aplica.
+     * Texto con la información extra del símbolo según su categoria.
+     * @Entrada: ninguna.
+     * @Salida: por ejemplo "inicializada", "tamano 5" o "retorna int, parámetros: int a".
      */
-    public String getInformacion() {
-        StringBuilder sb = new StringBuilder();
-        switch (categoria) {
-            case VARIABLE:
-                sb.append(inicializada ? "inicializada" : "sin inicializar");
-                break;
-            case ARREGLO:
-                sb.append("dimensión ").append(dimension)
-                  .append(inicializada ? ", inicializado" : ", sin inicializar");
-                break;
-            case PARAMETRO:
-                sb.append("recibido por valor");
-                break;
-            case FUNCION:
-                sb.append("retorna ").append(tipo).append("; ").append(firmaParametros());
-                break;
-            case PRINCIPAL:
-                sb.append("punto de entrada; ").append(firmaParametros());
-                break;
-            default:
-                break;
+    public String getInfo() {
+        String info = "";
+        if (categoria == Categoria.VARIABLE) {
+            if (inicializada) {
+                info = "inicializada";
+            } else {
+                info = "sin inicializar";
+            }
+        } else if (categoria == Categoria.ARREGLO) {
+            info = "tamaño " + dimension;
+        } else if (categoria == Categoria.FUNCION || categoria == Categoria.PRINCIPAL) {
+            info = "retorna " + tipo + ", parámetros: ";
+            if (parametros.isEmpty()) {
+                info += "ninguno";
+            }
+            for (int i = 0; i < parametros.size(); i++) {
+                if (i > 0) {
+                    info += ", ";
+                }
+                info += parametros.get(i).getTipo() + " " + parametros.get(i).getLexema();
+            }
         }
-        if (redeclarada && primeraDeclaracion != null) {
-            sb.append("; REDECLARADA (primera en L").append(primeraDeclaracion.getLinea())
-              .append(":C").append(primeraDeclaracion.getColumna()).append(")");
+        if (redeclarada) {
+            info += " (repetida, primera en línea " + primeraDeclaracion.getLinea() + ")";
         }
-        return sb.toString();
-    }
-
-    /**
-     * Describe los parámetros de una función.
-     * @Entrada: Ninguna.
-     * @Salida: "sin parámetros" o "parámetros (int n, float x)".
-     */
-    public String firmaParametros() {
-        if (parametros.isEmpty()) {
-            return "sin parámetros";
-        }
-        StringBuilder sb = new StringBuilder("parámetros (");
-        for (int i = 0; i < parametros.size(); i++) {
-            if (i > 0) sb.append(", ");
-            sb.append(parametros.get(i).getTipo()).append(' ').append(parametros.get(i).getLexema());
-        }
-        return sb.append(')').toString();
-    }
-
-    /**
-     * Descripción corta usada en la columna Info del archivo de tokens.
-     * @Entrada: Ninguna.
-     * @Salida: Por ejemplo "variable int" o "función float, parámetros (int n)".
-     */
-    public String getDescripcionCorta() {
-        if (categoria == Categoria.FUNCION || categoria == Categoria.PRINCIPAL) {
-            return categoria + " " + tipo + ", " + firmaParametros();
-        }
-        if (categoria == Categoria.ARREGLO) {
-            return "arreglo " + tipo + "[" + dimension + "]";
-        }
-        return categoria + " " + tipo;
+        return info;
     }
 }

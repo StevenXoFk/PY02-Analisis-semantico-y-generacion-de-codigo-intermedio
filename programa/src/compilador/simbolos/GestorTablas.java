@@ -1,155 +1,146 @@
 package compilador.simbolos;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
+import java.util.Comparator;
 import java.util.List;
 
 /**
- * Construye las tablas de símbolos desde las acciones del parser, de forma
- * procedural, y genera el reporte de tablas.
+ * Arma el árbol de tablas de símbolos a partir de las acciones de Parser.cup.
+ *
  * @Entrada: llamadas desde las acciones del parser con las posiciones de los tokens.
- * @Salida: árbol de tablas de símbolos con raíz en la tabla global; resolución de cada ID a su
- *          tabla (resolver); archivo de reporte <nombre>_simbolos.txt (escribirReporte).
- * @Restricciones:
- * - Estado estático: llamar reiniciar() antes de analizar cada archivo.
- * - Si el parse no termina (error no recuperable), cerrarGlobal() mete en la global todo lo que
- *   quedó pendiente y el reporte indica que las tablas son parciales.
- * @Objetivo: Implementar la tabla de símbolos.
+ * @Salida: la tabla global, que es la raíz del árbol de tablas.
+ * @Restricciones: hay que llamar reiniciar() antes de analizar cada archivo.
+ * @Objetivo: construir las tablas de símbolos por alcance.
  */
-public final class GestorTablas {
+public class GestorTablas {
 
-    private static final Deque<Object> pendientes = new ArrayDeque<>();
+    private static List<Simbolo> declaraciones = new ArrayList<>();
+    private static List<TablaSimbolos> alcances = new ArrayList<>();
     private static TablaSimbolos global = null;
     private static boolean completa = false;
 
-    private static final String FORMATO_FILA = "%-24s %-11s %-8s %-6s %-6s %s";
-
-    private GestorTablas() { }
-
     /**
-     * Deja el gestor listo para analizar un archivo nuevo.
-     * @Entrada: Ninguna.
-     * @Salida: pila de pendientes vacía y sin tabla global.
+     * Deja todo vacío para analizar un archivo nuevo.
+     * @Entrada: ninguna.
+     * @Salida: listas vacías y sin tabla global.
      */
     public static void reiniciar() {
-        pendientes.clear();
+        declaraciones.clear();
+        alcances.clear();
         global = null;
         completa = false;
     }
 
     /**
-     * Registra una declaración (variable, arreglo, parámetro o función) como pendiente.
-     * @Entrada: símbolo creado en la acción de la producción de declaración.
-     * @Salida: el símbolo queda en la pila hasta que se cierre su alcance.
+     * Anota una declaración (variable, arreglo, parámetro o función).
+     * @Entrada: el símbolo declarado.
+     * @Salida: el símbolo queda en la lista de declaraciones.
      */
     public static void declarar(Simbolo s) {
         if (s != null) {
-            pendientes.push(s);
+            declaraciones.add(s);
         }
     }
 
     /**
-     * Cierra un bloque "¿: ... :?" y arma su tabla.
-     * @Entrada: línea/columna de "¿:" y de ":?".
-     * @Salida: tabla del bloque (con nombre provisional "bloque"); queda pendiente para el
-     *          alcance que la contiene.
+     * Anota un bloque ¿: ... :? como un alcance nuevo.
+     * @Entrada: línea y columna de ¿: y de :?.
+     * @Salida: la tabla del bloque, con nombre "bloque" hasta que se sepa de qué estructura es.
      */
     public static TablaSimbolos cerrarBloque(int lineaAbre, int colAbre, int lineaCierra, int colCierra) {
         long inicio = TablaSimbolos.posicion(lineaAbre, colAbre);
-        TablaSimbolos t = new TablaSimbolos("bloque", inicio, TablaSimbolos.posicion(lineaCierra, colCierra));
-        t.agregarContenido(sacarDesde(inicio));
-        pendientes.push(t);
-        return t;
+        long fin = TablaSimbolos.posicion(lineaCierra, colCierra);
+        TablaSimbolos tabla = new TablaSimbolos("bloque", inicio, fin);
+        alcances.add(tabla);
+        return tabla;
     }
 
     /**
-     * Le pone nombre a la tabla de un bloque según la estructura que lo usa.
-     * @Entrada: tabla devuelta por el bloque, palabra de la estructura y posición de esa palabra reservada.
-     * @Salida: la tabla queda nombrada.
+     * Le pone nombre y clase a la tabla de un if, elif, else o while.
+     * @Entrada: tabla del bloque, palabra de la estructura y su posición.
+     * @Salida: la tabla queda con nombre, por ejemplo "while línea 23".
      */
-    public static void nombrar(TablaSimbolos t, String estructura, int linea, int columna) {
-        if (t != null) {
-            t.setNombre(estructura + " (L" + linea + ":C" + columna + ")");
-            t.setClase(TablaSimbolos.Clase.valueOf(estructura.toUpperCase()));
-        }
+    public static void nombrar(TablaSimbolos tabla, String estructura, int linea, int columna) {
+        tabla.setNombre(estructura + " línea " + linea);
+        tabla.setClase(TablaSimbolos.Clase.valueOf(estructura.toUpperCase()));
     }
 
     /**
-     * Cierra el alcance de un for: su tabla incluye la variable declarada en el encabezado.
-     * @Entrada: tabla del bloque del for y posición de la palabra "for".
-     * @Salida: la tabla se nombra "for (L..)", su rango empieza en "for" y absorbe los
-     *          pendientes del encabezado.
+     * Cierra un for. Su alcance empieza en la palabra for, para que la variable del
+     * encabezado (for є: val int i ...) quede dentro del for.
+     * @Entrada: tabla del bloque del for y posición de la palabra for.
+     * @Salida: la tabla queda como alcance del for.
      */
-    public static void cerrarFor(TablaSimbolos t, int linea, int columna) {
-        extender(t, linea, columna);
-        nombrar(t, "for", linea, columna);
+    public static void cerrarFor(TablaSimbolos tabla, int linea, int columna) {
+        tabla.setInicio(TablaSimbolos.posicion(linea, columna));
+        nombrar(tabla, "for", linea, columna);
     }
 
     /**
-     * Cierra una función: parámetros y cuerpo forman un solo alcance, y la función se declara
-     * en el alcance global.
-     * @Entrada: tabla del bloque del cuerpo, nombre y posición del ID de la función, tipo de
-     *           retorno, lista de parámetros (Simbolo) y posición de "є:".
-     * @Salida: tabla "función <nombre>" con los parámetros al inicio; símbolo FUNCION pendiente.
+     * Cierra una función. Su alcance empieza en є: para que los parámetros queden en la
+     * misma tabla que el cuerpo. La función se declara con su firma.
+     * @Entrada: tabla del cuerpo, nombre, posición del nombre, tipo de retorno, parámetros y
+     *           posición de є:.
+     * @Salida: la tabla queda como "función <nombre>" y se anota el símbolo de la función.
      */
-    public static void cerrarFuncion(TablaSimbolos t, String nombre, int linea, int columna,
+    public static void cerrarFuncion(TablaSimbolos tabla, String nombre, int linea, int columna,
                                      String tipoRetorno, List<Simbolo> parametros,
                                      int lineaParen, int colParen) {
-        extender(t, lineaParen, colParen);
-        if (t != null) {
-            t.setNombre("función " + nombre);
-            t.setClase(TablaSimbolos.Clase.FUNCION);
-        }
-        Simbolo f = new Simbolo(nombre, tipoRetorno, linea, columna);
-        f.setCategoria(Simbolo.Categoria.FUNCION);
-        f.setParametros(parametros != null ? parametros : new ArrayList<>());
-        declarar(f);
+        tabla.setInicio(TablaSimbolos.posicion(lineaParen, colParen));
+        tabla.setNombre("funcion " + nombre);
+        tabla.setClase(TablaSimbolos.Clase.FUNCION);
+
+        Simbolo funcion = new Simbolo(nombre, tipoRetorno, linea, columna);
+        funcion.setCategoria(Simbolo.Categoria.FUNCION);
+        funcion.setParametros(parametros);
+        declarar(funcion);
     }
 
     /**
      * Cierra la función principal.
-     * @Entrada: tabla del bloque, posición de "principal" y de "є:".
-     * @Salida: tabla "principal"; símbolo PRINCIPAL (void, sin parámetros) pendiente.
+     * @Entrada: tabla del cuerpo, posición de "principal" y de є:.
+     * @Salida: la tabla queda como "principal" y se anota su símbolo (void, sin parámetros).
      */
-    public static void cerrarPrincipal(TablaSimbolos t, int linea, int columna, int lineaParen, int colParen) {
-        extender(t, lineaParen, colParen);
-        if (t != null) {
-            t.setNombre("principal");
-            t.setClase(TablaSimbolos.Clase.PRINCIPAL);
-        }
-        Simbolo p = new Simbolo("principal", "void", linea, columna);
-        p.setCategoria(Simbolo.Categoria.PRINCIPAL);
-        declarar(p);
+    public static void cerrarPrincipal(TablaSimbolos tabla, int linea, int columna, int lineaParen, int colParen) {
+        tabla.setInicio(TablaSimbolos.posicion(lineaParen, colParen));
+        tabla.setNombre("principal");
+        tabla.setClase(TablaSimbolos.Clase.PRINCIPAL);
+
+        Simbolo principal = new Simbolo("principal", "void", linea, columna);
+        principal.setCategoria(Simbolo.Categoria.PRINCIPAL);
+        declarar(principal);
     }
 
     /**
-     * Arma la tabla global con todo lo que queda pendiente. Se llama desde la acción de
-     * "programa" (parse completo) y desde Main después del parse (por si no terminó).
-     * @Entrada: Ninguna.
-     * @Salida: tabla global (raíz del árbol); llamadas repetidas devuelven la misma tabla.
+     * Arma el árbol de tablas con lo anotado. Se llama al terminar "programa".
+     * @Entrada: ninguna.
+     * @Salida: la tabla global; si ya estaba armada devuelve la misma.
      */
     public static TablaSimbolos cerrarGlobal() {
-        if (global == null) {
-            completa = true;
-            global = new TablaSimbolos("global", 0, TablaSimbolos.FIN_ARCHIVO);
-            global.setClase(TablaSimbolos.Clase.GLOBAL);
-            global.agregarContenido(sacarDesde(Long.MIN_VALUE));
+        if (global != null) {
+            return global;
+        }
+        completa = true;
+        global = new TablaSimbolos("global", 0, TablaSimbolos.FIN_ARCHIVO);
+        global.setClase(TablaSimbolos.Clase.GLOBAL);
+
+        alcances.sort(Comparator.comparingLong(TablaSimbolos::getInicio));
+        for (TablaSimbolos tabla : alcances) {
+            global.tablaMasInterna(tabla.getInicio()).agregarHija(tabla);
+        }
+
+        declaraciones.sort(Comparator.comparingLong(Simbolo::getPosicion));
+        for (Simbolo s : declaraciones) {
+            global.tablaMasInterna(s.getPosicion()).agregar(s);
         }
         return global;
     }
 
     /**
-     * Versión usada por Main: si el parser no llegó a "programa", arma la global marcándola
-     * como parcial.
-     * @Entrada: Ninguna.
-     * @Salida: tabla global.
+     * La usa Main después del parse. Si hubo un error que no dejó llegar a "programa",
+     * arma el árbol con lo que se alcanzó a anotar y lo marca como incompleto.
+     * @Entrada: ninguna.
+     * @Salida: la tabla global.
      */
     public static TablaSimbolos finalizar() {
         if (global == null) {
@@ -161,165 +152,4 @@ public final class GestorTablas {
 
     public static TablaSimbolos getGlobal() { return global; }
     public static boolean isCompleta() { return completa; }
-
-    /**
-     * Extiende el inicio de la tabla que está en el tope de la pila hasta una posición anterior
-     * y absorbe los pendientes que están entre esa posición y el bloque (parámetros o variable
-     * del encabezado del for).
-     * @Entrada: tabla del bloque (debe ser el tope de la pila) y nueva posición de inicio.
-     * @Salida: tabla extendida y devuelta al tope de la pila.
-     */
-    private static void extender(TablaSimbolos t, int linea, int columna) {
-        if (t == null || pendientes.peek() != t) {
-            return;
-        }
-        pendientes.pop();
-        long inicio = TablaSimbolos.posicion(linea, columna);
-        t.anteponer(sacarDesde(inicio));
-        t.setInicio(inicio);
-        pendientes.push(t);
-    }
-
-    /**
-     * Saca de la pila los pendientes cuya posición es >= desde.
-     * @Entrada: posición codificada.
-     * @Salida: lista de pendientes en orden del fuente.
-     */
-    private static List<Object> sacarDesde(long desde) {
-        List<Object> sacados = new ArrayList<>();
-        while (!pendientes.isEmpty() && posicionDe(pendientes.peek()) >= desde) {
-            sacados.add(pendientes.pop());
-        }
-        Collections.reverse(sacados);
-        return sacados;
-    }
-
-    private static long posicionDe(Object o) {
-        if (o instanceof Simbolo) {
-            return ((Simbolo) o).getPosicion();
-        }
-        return ((TablaSimbolos) o).getInicio();
-    }
-
-    /**
-     * Determina en qué tabla va un token ID y qué información le corresponde.
-     * @Entrada: lexema del ID, línea y columna del token.
-     * @Salida: arreglo {tabla, info}. La tabla es el alcance más interno donde aparece el token;
-     *          la info dice si es declaración o uso (y a qué declaración se refiere).
-     */
-    public static String[] resolver(String lexema, int linea, int columna) {
-        if (global == null) {
-            return new String[]{"Identificadores", ""};
-        }
-        long pos = TablaSimbolos.posicion(linea, columna);
-        TablaSimbolos t = global.tablaMasInterna(pos);
-        if (t == null) {
-            t = global;
-        }
-        Simbolo decl = t.declaradoEn(pos);
-        if (decl == null && t != global) {
-            decl = global.declaradoEn(pos);
-            if (decl != null) {
-                t = global;
-            }
-        }
-        if (decl != null) {
-            return new String[]{t.getNombre(), "declaración · " + decl.getDescripcionCorta()
-                    + (decl.isRedeclarada() ? " · REDECLARADA" : "")};
-        }
-        Simbolo s = t.buscar(lexema);
-        if (s == null) {
-            return new String[]{t.getNombre(), "uso sin declaración visible"};
-        }
-        String info = "uso → " + s.getDescripcionCorta() + " de '" + s.getAlcance().getNombre()
-                + "' (L" + s.getLinea() + ":C" + s.getColumna() + ")";
-        if (s.getPosicion() > pos && s.getCategoria() != Simbolo.Categoria.FUNCION) {
-            info += " · declarada después del uso";
-        }
-        return new String[]{t.getNombre(), info};
-    }
-
-    /**
-     * Escribe el archivo con todas las tablas de símbolos.
-     * @Entrada: ruta del archivo, filas de la tabla de constantes y de reservadas
-     *           (cada fila: {lexema, tipo/token, primera posición, apariciones}).
-     * @Salida: archivo con el árbol de tablas (indentado por nivel), constantes y reservadas.
-     */
-    public static void escribirReporte(Path ruta, List<String[]> constantes, List<String[]> reservadas)
-            throws IOException {
-        Path carpeta = ruta.getParent();
-        if (carpeta != null) {
-            Files.createDirectories(carpeta);
-        }
-        try (BufferedWriter w = Files.newBufferedWriter(ruta, StandardCharsets.UTF_8)) {
-            w.write("==================== TABLAS DE SÍMBOLOS ====================");
-            w.newLine();
-            if (!completa) {
-                w.write("NOTA: el análisis sintáctico no terminó; las tablas son parciales.");
-                w.newLine();
-            }
-            w.newLine();
-            if (global != null) {
-                escribirTabla(w, global);
-            }
-
-            w.write("==================== TABLA DE CONSTANTES ====================");
-            w.newLine();
-            escribirFilas(w, String.format("%-30s %-10s %-14s %s", "Valor", "Tipo", "Primera vez", "Apariciones"),
-                    constantes, "%-30s %-10s %-14s %s");
-
-            w.write("==================== TABLA DE PALABRAS RESERVADAS ====================");
-            w.newLine();
-            escribirFilas(w, String.format("%-30s %-10s %-14s %s", "Lexema", "Token", "Primera vez", "Apariciones"),
-                    reservadas, "%-30s %-10s %-14s %s");
-        }
-    }
-
-    /**
-     * Escribe una tabla y, recursivamente, sus hijas con más indentación.
-     * @Entrada: escritor y tabla.
-     * @Salida: encabezado de la tabla (nombre, nivel, padre, rango) y una fila por símbolo.
-     */
-    private static void escribirTabla(BufferedWriter w, TablaSimbolos t) throws IOException {
-        String sangria = "    ".repeat(t.getNivel());
-        String padre = t.getPadre() == null ? "—" : t.getPadre().getNombre();
-        String rango = t.getPadre() == null ? "todo el archivo"
-                : TablaSimbolos.textoPosicion(t.getInicio()) + " – " + TablaSimbolos.textoPosicion(t.getFin());
-        w.write(sangria + "TABLA: " + t.getNombre() + "   (nivel " + t.getNivel() + ", padre: " + padre
-                + ", rango: " + rango + ")");
-        w.newLine();
-        if (t.getSimbolos().isEmpty()) {
-            w.write(sangria + "  (sin declaraciones)");
-            w.newLine();
-        } else {
-            w.write(sangria + "  " + String.format(FORMATO_FILA, "Lexema", "Categoría", "Tipo", "Línea", "Col", "Información"));
-            w.newLine();
-            for (Simbolo s : t.getSimbolos()) {
-                w.write(sangria + "  " + String.format(FORMATO_FILA, s.getLexema(), s.getCategoria(), s.getTipo(),
-                        s.getLinea(), s.getColumna(), s.getInformacion()));
-                w.newLine();
-            }
-        }
-        w.newLine();
-        for (TablaSimbolos h : t.getHijos()) {
-            escribirTabla(w, h);
-        }
-    }
-
-    private static void escribirFilas(BufferedWriter w, String encabezado, List<String[]> filas, String formato)
-            throws IOException {
-        if (filas.isEmpty()) {
-            w.write("  (vacía)");
-            w.newLine();
-            w.newLine();
-            return;
-        }
-        w.write("  " + encabezado);
-        w.newLine();
-        for (String[] f : filas) {
-            w.write("  " + String.format(formato, (Object[]) f));
-            w.newLine();
-        }
-        w.newLine();
-    }
 }
