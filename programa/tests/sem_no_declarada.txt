@@ -1,0 +1,28 @@
+| ============================================================
+| Objetivo: verificar la declaración antes de uso.
+| Resultado esperado: 4 errores semánticos, en las líneas 17, 18, 22 y 23.
+|   L17: 'z' no está declarada (nunca se declara)
+|   L18: 'tarde' no está declarada (se declara después)
+|   L22: 'dentro' no está declarada (su alcance ya se cerró)
+|   L23: 'doble' es una función, no una variable
+| Las demás líneas son válidas.
+| ============================================================
+
+val int global Ͱ 10 »
+
+void principal є: :э ¿:
+    val int a Ͱ global »
+    val int b Ͱ doble є: a :э »
+
+    a Ͱ z »
+    a Ͱ tarde »
+    val int tarde Ͱ 1 »
+
+    if є: true :э ¿: val int dentro Ͱ 2 » :?
+    a Ͱ dentro »
+    a Ͱ doble »
+:?
+
+int doble є: int x :э ¿:
+    return x * 2 »
+:?

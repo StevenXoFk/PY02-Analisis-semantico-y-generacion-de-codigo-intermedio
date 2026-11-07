@@ -1,0 +1,29 @@
+| ============================================================
+| Objetivo: verificar los tipos en operaciones lógicas (λ and, θ or, Σ negación).
+| Resultado esperado: 5 errores semánticos, en las líneas 24, 25, 26, 27 y 28.
+|   L24: int λ bool
+|   L25: bool θ string
+|   L26: Σ sobre int
+|   L27: float θ int
+|   L28: el error de la suma no genera otro error en el λ (sin cascada)
+| ============================================================
+
+val int a Ͱ 7 »
+val float f Ͱ 2.5 »
+
+void principal є: :э ¿:
+    val bool ok Ͱ true »
+    | ---- válidos ----
+    val bool v1 Ͱ є: ok :э λ є: true :э »
+    val bool v2 Ͱ є: ok :э θ є: false :э λ є: ok :э »
+    val bool v3 Ͱ Σ є: ok :э »
+    val bool v4 Ͱ є: ʃ: a :ʅ > ʃ: 0 :ʅ :э λ Σ є: false :э »
+    val bool v5 Ͱ є: є: ok :э θ є: false :э :э λ є: true :э »
+    | ---- errores ----
+    | cada línea siguiente tiene un solo error
+    val bool e1 Ͱ є: a :э λ є: true :э »
+    val bool e2 Ͱ є: ok :э θ є: "si" :э »
+    val bool e3 Ͱ Σ є: a :э »
+    val bool e4 Ͱ є: f :э θ є: 1 :э »
+    val bool e5 Ͱ є: a + f :э λ є: ok :э »
+:?

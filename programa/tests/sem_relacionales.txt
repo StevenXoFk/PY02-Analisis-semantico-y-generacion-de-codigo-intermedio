@@ -1,0 +1,33 @@
+| ============================================================
+| Objetivo: verificar los tipos en operaciones relacionales (tipado estricto).
+| Resultado esperado: 6 errores semánticos, en las líneas 27, 28, 29, 30, 31 y 32.
+|   L27: int < float (no se mezclan)
+|   L28: string > string (orden solo con números)
+|   L29: bool >= bool (orden solo con números)
+|   L30: int == float (igualdad con tipos distintos)
+|   L31: char != string (igualdad con tipos distintos)
+|   L32: el error de la suma no genera otro error en el < (sin cascada)
+| ============================================================
+
+val int a Ͱ 7 »
+val float f Ͱ 2.5 »
+
+void principal є: :э ¿:
+    | ---- válidos ----
+    val bool r1 Ͱ ʃ: a :ʅ < ʃ: 10 :ʅ »
+    val bool r2 Ͱ ʃ: f :ʅ >= ʃ: 1.0 :ʅ »
+    val bool r3 Ͱ ʃ: a + 1 :ʅ <= ʃ: a * 2 :ʅ »
+    val bool r4 Ͱ ʃ: a :ʅ == ʃ: 7 :ʅ »
+    val bool r5 Ͱ ʃ: "hola" :ʅ != ʃ: "chao" :ʅ »
+    val bool r6 Ͱ ʃ: 'x' :ʅ == ʃ: 'y' :ʅ »
+    val bool r7 Ͱ ʃ: true :ʅ == ʃ: ʃ: a :ʅ > ʃ: 0 :ʅ :ʅ »
+    val bool r8 Ͱ ʃ: f :ʅ > ʃ: -1.5 :ʅ »
+    val bool r9 Ͱ ʃ: a :ʅ != ʃ: 0 :ʅ »
+    | ---- errores ----
+    val bool e1 Ͱ ʃ: a :ʅ < ʃ: f :ʅ »
+    val bool e2 Ͱ ʃ: "a" :ʅ > ʃ: "b" :ʅ »
+    val bool e3 Ͱ ʃ: true :ʅ >= ʃ: false :ʅ »
+    val bool e4 Ͱ ʃ: a :ʅ == ʃ: 2.5 :ʅ »
+    val bool e5 Ͱ ʃ: 'c' :ʅ != ʃ: "c" :ʅ »
+    val bool e6 Ͱ ʃ: a + f :ʅ < ʃ: 3 :ʅ »
+:?

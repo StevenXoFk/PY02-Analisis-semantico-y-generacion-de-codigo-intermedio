@@ -1,39 +1,28 @@
 package compilador.simbolos;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Tabla de símbolos de un alcance.
- * @Entrada: nombre del alcance y su rango en el fuente; luego
- *           los símbolos y tablas hijas que GestorTablas le va agregando.
- * @Salida: Estructura consultable con buscarLocal(), buscar() y tablaMasInterna().
- * @Restricciones:
- * - Los símbolos se guardan en orden de declaración.
- * - El nivel se calcula a partir del padre.
- * @Objetivo: Implementar la tabla de símbolos por alcance.
+ * Tabla de símbolos de un alcance. 
+ * @Entrada: nombre del alcance y su rango en el código fuente (inicio y fin).
+ * @Salida: la tabla con sus símbolos y sus tablas hijas.
+ * @Restricciones: las posiciones se guardan como línea * 100000 + columna (ver posicion()).
+ * @Objetivo: guardar los identificadores de cada alcance y permitir buscarlos.
  */
 public class TablaSimbolos {
-    public static final long FIN_ARCHIVO = Long.MAX_VALUE;
-    public enum Clase { GLOBAL, FUNCION, PRINCIPAL, IF, ELIF, ELSE, WHILE, FOR, BLOQUE }
 
-    private Clase clase = Clase.BLOQUE;
+    public enum Clase { GLOBAL, FUNCION, PRINCIPAL, IF, ELIF, ELSE, WHILE, FOR, BLOQUE }
+    public static final long FIN_ARCHIVO = Long.MAX_VALUE;
+
     private String nombre;
-    private TablaSimbolos padre;
-    private final List<TablaSimbolos> hijos = new ArrayList<>();
-    private final List<Simbolo> simbolos = new ArrayList<>();
-    private final Map<String, Simbolo> primeros = new LinkedHashMap<>();
+    private Clase clase = Clase.BLOQUE;
     private long inicio;
     private long fin;
+    private TablaSimbolos padre = null;
+    private List<TablaSimbolos> hijos = new ArrayList<>();
+    private List<Simbolo> simbolos = new ArrayList<>();
 
-    /**
-     * Crea una tabla vacía sin padre.
-     * @Entrada: nombre del alcance, posición de inicio y posición de fin.
-     * @Salida: Tabla nueva.
-     */
     public TablaSimbolos(String nombre, long inicio, long fin) {
         this.nombre = nombre;
         this.inicio = inicio;
@@ -41,48 +30,34 @@ public class TablaSimbolos {
     }
 
     /**
-     * Codifica una posición del fuente en un número comparable.
-     * @Entrada: línea y columna (base 1).
+     * Convierte línea y columna en un solo número para comparar posiciones fácilmente.
+     * @Entrada: línea y columna.
      * @Salida: línea * 100000 + columna.
-     * @Restricciones: supone líneas de menos de 100000 columnas.
+     * @Restricciones: supone líneas de menos de 100000 caracteres.
      */
     public static long posicion(int linea, int columna) {
-        return (long) linea * 100000L + columna;
+        return linea * 100000L + columna;
     }
 
     /**
-     * Convierte una posición codificada a texto "L<linea>:C<columna>".
-     * @Entrada: posición codificada.
-     * @Salida: texto legible, o "fin del archivo".
-     */
-    public static String textoPosicion(long pos) {
-        if (pos == FIN_ARCHIVO) {
-            return "fin del archivo";
-        }
-        return "L" + (pos / 100000L) + ":C" + (pos % 100000L);
-    }
-
-    /**
-     * Agrega un símbolo al final de la tabla.
+     * Agrega un símbolo a esta tabla. Si ya había uno con el mismo nombre en esta misma tabla,
+     * el nuevo se marca como repetido.
      * @Entrada: símbolo declarado en este alcance.
-     * @Salida: el símbolo queda en la tabla; si el nombre ya existía en ESTA tabla se marca
-     *          como redeclarado (se conservan ambas entradas).
+     * @Salida: el símbolo queda guardado en la tabla.
      */
     public void agregar(Simbolo s) {
-        Simbolo previo = primeros.get(s.getLexema());
-        if (previo != null) {
-            s.marcarRedeclarada(previo);
-        } else {
-            primeros.put(s.getLexema(), s);
+        Simbolo anterior = buscarLocal(s.getLexema());
+        if (anterior != null) {
+            s.marcarRedeclarada(anterior);
         }
         s.setAlcance(this);
         simbolos.add(s);
     }
 
     /**
-     * Agrega una tabla hija con anidación y la enlaza con esta como padre.
-     * @Entrada: tabla del alcance anidado.
-     * @Salida: la hija queda en la lista de hijos y su padre es esta tabla.
+     * Agrega una tabla hija (un alcance que está dentro de este).
+     * @Entrada: tabla hija.
+     * @Salida: la hija queda guardada y esta tabla queda como su padre.
      */
     public void agregarHija(TablaSimbolos hija) {
         hija.padre = this;
@@ -90,62 +65,13 @@ public class TablaSimbolos {
     }
 
     /**
-     * Inserta, antes del contenido actual, símbolos y tablas que aparecen antes en el fuente.
-     * @Entrada: lista en orden del fuente con objetos Simbolo o TablaSimbolos.
-     * @Salida: la tabla queda con el prefijo seguido de su contenido anterior, recalculando
-     *          las marcas de redeclaración.
-     */
-    void anteponer(List<Object> prefijo) {
-        if (prefijo.isEmpty()) {
-            return;
-        }
-        List<Simbolo> viejosSimbolos = new ArrayList<>(simbolos);
-        List<TablaSimbolos> viejosHijos = new ArrayList<>(hijos);
-        simbolos.clear();
-        hijos.clear();
-        primeros.clear();
-        agregarContenido(prefijo);
-        for (Simbolo s : viejosSimbolos) {
-            agregar(s);
-        }
-        for (TablaSimbolos h : viejosHijos) {
-            agregarHija(h);
-        }
-    }
-
-    /**
-     * Agrega a la tabla una lista mixta de símbolos y tablas hijas.
-     * @Entrada: lista en orden del fuente con objetos Simbolo o TablaSimbolos.
-     * @Salida: cada Simbolo se agrega como símbolo y cada TablaSimbolos como hija.
-     */
-    void agregarContenido(List<Object> contenido) {
-        for (Object o : contenido) {
-            if (o instanceof Simbolo) {
-                agregar((Simbolo) o);
-            } else if (o instanceof TablaSimbolos) {
-                agregarHija((TablaSimbolos) o);
-            }
-        }
-    }
-
-    /**
      * Busca un nombre solo en esta tabla.
-     * @Entrada: lexema.
-     * @Salida: su primera declaración en este alcance, o null.
+     * @Entrada: nombre a buscar.
+     * @Salida: la primera declaración con ese nombre, o null si no está.
      */
     public Simbolo buscarLocal(String lexema) {
-        return primeros.get(lexema);
-    }
-
-    /**
-     * Busca un nombre en esta tabla y luego en los padres (bloque anidado más cercano).
-     * @Entrada: lexema.
-     * @Salida: la declaración visible más cercana, o null si no hay ninguna.
-     */
-    public Simbolo buscar(String lexema) {
-        for (TablaSimbolos t = this; t != null; t = t.padre) {
-            Simbolo s = t.buscarLocal(lexema);
-            if (s != null) {
+        for (Simbolo s : simbolos) {
+            if (s.getLexema().equals(lexema)) {
                 return s;
             }
         }
@@ -153,62 +79,51 @@ public class TablaSimbolos {
     }
 
     /**
-     * Busca la declaración visible de un nombre en una posición del fuente: recorre esta tabla
-     * y sus padres, y en cada una solo considera declaraciones hechas ANTES de esa posición. 
-     * Las funciones y principal son visibles en todo el archivo.
-     * @Entrada: lexema y posición codificada del uso.
-     * @Salida: la declaración visible más cercana, o null si no hay ninguna.
-     * @Restricciones: se usa sobre el árbol de la pasada 1, que ya está completo.
+     * Busca un nombre desde esta tabla hacia afuera, pero solo acepta declaraciones que estén
+     * antes de la posición donde se usa el nombre. Las funciones y principal se aceptan
+     * siempre, porque se pueden llamar aunque estén declaradas más abajo.
+     * @Entrada: nombre y posición donde se usa.
+     * @Salida: la declaración que se ve desde esa posición, o null si no hay.
      */
     public Simbolo buscarAntesDe(String lexema, long pos) {
-        for (TablaSimbolos t = this; t != null; t = t.padre) {
-            for (Simbolo s : t.simbolos) {
-                if (!s.getLexema().equals(lexema)) {
-                    continue;
-                }
-                boolean subprograma = s.getCategoria() == Simbolo.Categoria.FUNCION
-                        || s.getCategoria() == Simbolo.Categoria.PRINCIPAL;
-                if (subprograma || s.getPosicion() < pos) {
-                    return s;
+        TablaSimbolos tabla = this;
+        while (tabla != null) {
+            for (Simbolo s : tabla.simbolos) {
+                if (s.getLexema().equals(lexema)) {
+                    boolean esFuncion = s.getCategoria() == Simbolo.Categoria.FUNCION
+                            || s.getCategoria() == Simbolo.Categoria.PRINCIPAL;
+                    if (esFuncion || s.getPosicion() < pos) {
+                        return s;
+                    }
                 }
             }
+            tabla = tabla.padre;
         }
         return null;
     }
 
     /**
-     * Busca el alcance más cercano de alguna de las clases dadas.
-     * @Entrada: clases buscadas.
-     * @Salida: la primera tabla, subiendo por los padres, cuya clase está en la lista; o null.
+     * Sube por los padres hasta encontrar una tabla de alguna de las clases dadas.
+     * Sirve para saber si un break está dentro de un ciclo o a qué función pertenece un return.
+     * @Entrada: una o varias clases (por ejemplo WHILE, FOR).
+     * @Salida: la primera tabla que cumpla, o null.
      */
     public TablaSimbolos ancestroDeClase(Clase... clases) {
-        for (TablaSimbolos t = this; t != null; t = t.padre) {
+        TablaSimbolos tabla = this;
+        while (tabla != null) {
             for (Clase c : clases) {
-                if (t.clase == c) {
-                    return t;
+                if (tabla.clase == c) {
+                    return tabla;
                 }
             }
+            tabla = tabla.padre;
         }
         return null;
     }
 
     /**
-     * Busca el símbolo declarado exactamente en una posición dentro de esta tabla.
-     * @Entrada: posición codificada del token ID.
-     * @Salida: el símbolo cuya declaración está en esa posición, o null.
-     */
-    public Simbolo declaradoEn(long pos) {
-        for (Simbolo s : simbolos) {
-            if (s.getPosicion() == pos) {
-                return s;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Indica si una posición cae dentro del rango de esta tabla.
-     * @Entrada: posición codificada.
+     * Indica si una posición está dentro del rango de esta tabla.
+     * @Entrada: posición.
      * @Salida: true si inicio <= pos <= fin.
      */
     public boolean contiene(long pos) {
@@ -216,44 +131,47 @@ public class TablaSimbolos {
     }
 
     /**
-     * Encuentra la tabla más anidada (esta o una descendiente) que contiene la posición.
-     * @Entrada: posición codificada de un token.
-     * @Salida: la tabla más interna que la contiene, o null si ni esta tabla la contiene.
+     * Busca la tabla más interna (esta o alguna hija) que contiene una posición.
+     * @Entrada: posición.
+     * @Salida: la tabla más anidada que la contiene, o null si esta tabla no la contiene.
      */
     public TablaSimbolos tablaMasInterna(long pos) {
         if (!contiene(pos)) {
             return null;
         }
-        for (TablaSimbolos h : hijos) {
-            TablaSimbolos t = h.tablaMasInterna(pos);
-            if (t != null) {
-                return t;
+        for (TablaSimbolos hija : hijos) {
+            TablaSimbolos encontrada = hija.tablaMasInterna(pos);
+            if (encontrada != null) {
+                return encontrada;
             }
         }
         return this;
     }
 
     /**
-     * Nivel de anidamiento.
-     * @Entrada: Ninguna.
-     * @Salida: 0 para la global, 1 para sus hijas, etc.
+     * Nivel de anidamiento de la tabla.
+     * @Entrada: ninguna.
+     * @Salida: 0 para la global, 1 para sus hijas y así sucesivamente.
      */
     public int getNivel() {
         int nivel = 0;
-        for (TablaSimbolos t = padre; t != null; t = t.padre) {
+        TablaSimbolos tabla = padre;
+        while (tabla != null) {
             nivel++;
+            tabla = tabla.padre;
         }
         return nivel;
     }
 
-    public Clase getClase() { return clase; }
-    void setClase(Clase clase) { this.clase = clase; }
     public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public TablaSimbolos getPadre() { return padre; }
-    public List<TablaSimbolos> getHijos() { return Collections.unmodifiableList(hijos); }
-    public List<Simbolo> getSimbolos() { return Collections.unmodifiableList(simbolos); }
+    public Clase getClase() { return clase; }
     public long getInicio() { return inicio; }
     public long getFin() { return fin; }
-    void setInicio(long inicio) { this.inicio = inicio; }
+    public TablaSimbolos getPadre() { return padre; }
+    public List<TablaSimbolos> getHijos() { return hijos; }
+    public List<Simbolo> getSimbolos() { return simbolos; }
+
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setClase(Clase clase) { this.clase = clase; }
+    public void setInicio(long inicio) { this.inicio = inicio; }
 }

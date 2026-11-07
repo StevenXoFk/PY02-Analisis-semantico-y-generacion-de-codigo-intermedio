@@ -5,6 +5,7 @@ import compilador.generated.Lexer;
 import compilador.generated.Parser;
 import compilador.semantico.Semantico;
 import compilador.simbolos.GestorTablas;
+import compilador.simbolos.ReporteSimbolos;
 import compilador.simbolos.TablaSimbolos;
 import compilador.tac.GeneradorTAC;
 
@@ -63,12 +64,12 @@ public class Main {
         Semantico.reiniciar();
         GeneradorTAC.reiniciar();
         analizar(archivoFuente, null);
-        TablaSimbolos contexto = GestorTablas.finalizar();
+        TablaSimbolos tablaGlobal = GestorTablas.finalizar();
 
         // pass 2
         ErrorReporter.limpiarErrores();
         GestorTablas.reiniciar();
-        Semantico.iniciar(contexto);
+        Semantico.iniciar(tablaGlobal);
         GeneradorTAC.reiniciar();
         TokenReporter tokenReporter = new TokenReporter();
         Codigo programa = analizar(archivoFuente, tokenReporter);
@@ -77,7 +78,7 @@ public class Main {
         GestorTablas.finalizar();
         try {
             tokenReporter.escribir(rutaTokens);
-            GestorTablas.escribirReporte(rutaSimbolos, tokenReporter.filasConstantes(),
+            ReporteSimbolos.escribir(rutaSimbolos, tokenReporter.filasConstantes(),
                     tokenReporter.filasReservadas());
         } catch (Exception e) {
             System.err.println("Error al guardar tokens o tablas de símbolos: " + e.getMessage());

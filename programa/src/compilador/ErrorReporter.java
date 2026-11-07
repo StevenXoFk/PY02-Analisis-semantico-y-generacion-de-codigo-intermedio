@@ -40,7 +40,7 @@ public class ErrorReporter {
 
         @Override
         public String toString() {
-            return String.format("%s: %s en la línea %d, columna %d", tipo, mensaje, linea, columna);
+            return String.format("%s en la línea %d, columna %d: %s", tipo, linea, columna, mensaje);
         }
     }
 
