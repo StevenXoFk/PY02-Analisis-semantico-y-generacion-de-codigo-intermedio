@@ -135,7 +135,7 @@ public final class Semantico {
             case ">=":
             case "==":
             case "!=":
-                return "bool";
+                return relacional(a.getTipo(), op, b.getTipo(), linea, columna);
 
             // Lógicos: λ (and), θ (or)
             case "λ":
@@ -146,6 +146,35 @@ public final class Semantico {
             default:
                 return aritmetica(a.getTipo(), op, b.getTipo(), linea, columna);
         }
+    }
+
+    /**
+     * Operación relacional: < <= > >= == !=.
+     * @Entrada: tipo de cada operando, operador y posición del operador.
+     * @Salida: "bool" o "error".
+     * @Restricciones: tipado estricto, no se mezclan int y float.
+     *                 < <= > >= solo comparan dos int o dos float;
+     *                 == != comparan dos operandos del mismo tipo.
+     */
+    private static String relacional(String tipoA, String op, String tipoB, int linea, int columna) {
+        if (!esSegundaPasada()) {
+            return Expr.ERROR;
+        }
+        // Toda comparación necesita los dos lados del mismo tipo
+        if (!tipoA.equals(tipoB)) {
+            ErrorReporter.semantico("El operador '" + op + "' no puede comparar " + tipoA + " con " + tipoB, columna, linea);
+            return Expr.ERROR;
+        }
+
+        // < <= > >= además solo con números
+        boolean esOrden = op.equals("<") || op.equals("<=") || op.equals(">") || op.equals(">=");
+        boolean esNumero = tipoA.equals("int") || tipoA.equals("float");
+        if (esOrden && !esNumero) {
+            ErrorReporter.semantico("El operador '" + op + "' solo compara números, se recibió " + tipoA, columna, linea);
+            return Expr.ERROR;
+        }
+
+        return "bool";
     }
 
     /**
