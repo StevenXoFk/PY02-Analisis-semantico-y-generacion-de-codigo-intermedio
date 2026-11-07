@@ -360,8 +360,17 @@ public final class Semantico {
      * Condición de if, elif, while o for.
      * @Entrada: expresión de la condición.
      * @Salida: error si no es bool.
+     * @Restricciones: el error se ubica en la posición de la expresión.
      */
     public static void condicion(Expr condicion) {
+        // Pasada 1, o la condición ya tenía error: se ignora
+        if (!esSegundaPasada() || Expr.esError(condicion)) {
+            return;
+        }
+        // Debe ser bool
+        if (!condicion.getTipo().equals("bool")) {
+            ErrorReporter.semantico("La condición debe ser bool, se recibió " + condicion.getTipo(), condicion.getColumna(), condicion.getLinea());
+        }
     }
 
     /**
