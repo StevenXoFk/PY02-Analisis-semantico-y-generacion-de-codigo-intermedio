@@ -263,10 +263,28 @@ public final class Semantico {
      * Incremento o decremento posfijo.
      * @Entrada: nombre de la variable, operador y posición.
      * @Salida: tipo de la variable o "error".
-     * @Restricciones:
+     * @Restricciones: solo variables int o float; no arreglos completos ni funciones.
      */
     public static String incremento(String nombre, String op, int linea, int columna) {
-        return tipoDe(usarVariable(nombre, linea, columna));
+        // usarVariable ya reporta si no existe o si es una función
+        Simbolo variable = usarVariable(nombre, linea, columna);
+        if (variable == null) {
+            return Expr.ERROR;
+        }
+
+        // No se aplica a un arreglo completo
+        if (variable.getCategoria() == Simbolo.Categoria.ARREGLO) {
+            ErrorReporter.semantico("'" + nombre + "' es un arreglo; '" + op + "' solo se aplica a variables", columna, linea);
+            return Expr.ERROR;
+        }
+
+        // Solo int o float
+        String tipo = variable.getTipo();
+        if (!tipo.equals("int") && !tipo.equals("float")) {
+            ErrorReporter.semantico("El operador '" + op + "' solo se aplica a int o float, '" + nombre + "' es " + tipo, columna, linea);
+            return Expr.ERROR;
+        }
+        return tipo;
     }
 
     /**

@@ -1,0 +1,32 @@
+| ============================================================
+| Objetivo: verificar ++ y -- (solo variables int o float).
+| Resultado esperado: 5 errores semánticos, en las líneas 23, 24, 25, 26 y 27.
+|   L23: ++ sobre bool
+|   L24: -- sobre string
+|   L25: ++ sobre un arreglo completo
+|   L26: ++ sobre una función
+|   L27: 'noExiste' no está declarada
+| ============================================================
+
+val int a Ͱ 7 »
+val float f Ͱ 2.5 »
+val int notas ʃ: 3 :ʅ »
+
+void principal є: :э ¿:
+    val bool ok Ͱ true »
+    val string s Ͱ "hola" »
+    | ---- válidos ----
+    a++ »
+    f-- »
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 3 :ʅ » i++ :э ¿: a-- » :?
+    | ---- errores ----
+    ok++ »
+    s-- »
+    notas++ »
+    doble++ »
+    noExiste++ »
+:?
+
+int doble є: int x :э ¿:
+    return x * 2 »
+:?
