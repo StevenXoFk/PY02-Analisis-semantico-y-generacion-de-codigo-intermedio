@@ -154,7 +154,7 @@ public final class Semantico {
      * @Salida: "bool" o "error".
      * @Restricciones: tipado estricto, no se mezclan int y float.
      *                 < <= > >= solo comparan dos int o dos float;
-     *                 == != comparan dos operandos del mismo tipo.
+     *                 == != además aceptan bool y char, pero no string (Anexo I, punto j).
      */
     private static String relacional(String tipoA, String op, String tipoB, int linea, int columna) {
         if (!esSegundaPasada()) {
@@ -171,6 +171,13 @@ public final class Semantico {
         boolean esNumero = tipoA.equals("int") || tipoA.equals("float");
         if (esOrden && !esNumero) {
             ErrorReporter.semantico("El operador '" + op + "' solo compara números, se recibió " + tipoA, columna, linea);
+            return Expr.ERROR;
+        }
+
+        // == != además aceptan bool y char, pero no string
+        boolean esBoolOChar = tipoA.equals("bool") || tipoA.equals("char");
+        if (!esOrden && !esNumero && !esBoolOChar) {
+            ErrorReporter.semantico("El operador '" + op + "' solo compara int, float, bool o char, se recibió " + tipoA, columna, linea);
             return Expr.ERROR;
         }
 
@@ -437,16 +444,45 @@ public final class Semantico {
      * Sentencia read.
      * @Entrada: nombre de la variable y posición.
      * @Salida: error si no es una variable int, float o char.
+     * @Restricciones: tipos según el Anexo I, punto p.
      */
     public static void leer(String nombre, int linea, int columna) {
+        // usarVariable ya reporta si no existe o si es una función
+        Simbolo variable = usarVariable(nombre, linea, columna);
+        if (variable == null) {
+            return;
+        }
+
+        // No en un arreglo completo
+        if (variable.getCategoria() == Simbolo.Categoria.ARREGLO) {
+            ErrorReporter.semantico("'" + nombre + "' es un arreglo; read solo lee en variables", columna, linea);
+            return;
+        }
+
+        // Solo int, float o char
+        String tipo = variable.getTipo();
+        boolean sePuedeLeer = tipo.equals("int") || tipo.equals("float") || tipo.equals("char");
+        if (!sePuedeLeer) {
+            ErrorReporter.semantico("read solo lee int, float o char; '" + nombre + "' es " + tipo, columna, linea);
+        }
     }
 
     /**
      * Sentencia write.
      * @Entrada: valor a escribir y posición de "write".
      * @Salida: error si el tipo no se puede escribir.
+     * @Restricciones: tipos según el Anexo I, punto p (string, int, bool o float; no char).
      */
     public static void escribir(Expr valor, int linea, int columna) {
+        if (!esSegundaPasada() || Expr.esError(valor)) {
+            return;
+        }
+        // Solo string, int, bool o float
+        String tipo = valor.getTipo();
+        boolean sePuedeEscribir = tipo.equals("string") || tipo.equals("int") || tipo.equals("bool") || tipo.equals("float");
+        if (!sePuedeEscribir) {
+            ErrorReporter.semantico("write no puede escribir un valor de tipo " + tipo, columna, linea);
+        }
     }
 
     /**
