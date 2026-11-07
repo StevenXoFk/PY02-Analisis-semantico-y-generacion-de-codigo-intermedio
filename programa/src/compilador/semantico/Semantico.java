@@ -72,13 +72,13 @@ public final class Semantico {
             return null;
         }
         // Alcance donde está el uso
-        long pos = TablaSimbolos.posicion(linea, columna);
-        TablaSimbolos alcance = tablaGlobal.tablaMasInterna(pos);
+        long posicion = TablaSimbolos.posicion(linea, columna);
+        TablaSimbolos alcance = tablaGlobal.tablaMasInterna(posicion);
         if (alcance == null) {
             alcance = tablaGlobal;
         }
 
-        Simbolo simbolo = alcance.buscarAntesDe(nombre, pos);
+        Simbolo simbolo = alcance.buscarAntesDe(nombre, posicion);
 
         // No declarada (o declarada después del uso)
         if (simbolo == null) {
@@ -411,8 +411,26 @@ public final class Semantico {
      * Sentencia break.
      * @Entrada: posición de "break".
      * @Salida: error si no hay un while o for que lo contenga dentro de la misma función.
+     * @Restricciones: las funciones no se anidan, así que al subir desde una función no se
+     *                 puede llegar a un ciclo de afuera.
      */
     public static void romper(int linea, int columna) {
+        if (!esSegundaPasada()) {
+            return;
+        }
+        // Tabla donde está el break
+        long posicion = TablaSimbolos.posicion(linea, columna);
+        TablaSimbolos alcance = tablaGlobal.tablaMasInterna(posicion);
+
+        // Desde ahí, buscar hacia afuera un while o un for
+        TablaSimbolos ciclo = alcance.ancestroDeClase(
+                TablaSimbolos.Clase.WHILE,
+                TablaSimbolos.Clase.FOR);
+
+        // Si no hay ningún ciclo alrededor, es error
+        if (ciclo == null) {
+            ErrorReporter.semantico("break solo puede ir dentro de un while o un for", columna, linea);
+        }
     }
 
     /**
