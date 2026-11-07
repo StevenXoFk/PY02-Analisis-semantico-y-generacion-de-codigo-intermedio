@@ -269,7 +269,8 @@ expr_negativo ::= OP_RESTA:o literal_numerico:n
 
 expr_primaria ::= literal:e {: RESULT = e; :}
     | ID:id
-        {: String ty = Semantico.tipoDe(Semantico.usarVariable(id, idleft, idright));
+        {: // ID sin ʃ: :ʅ; con ʃ: :ʅ el parser usa acceso_arreglo
+           String ty = Semantico.valorDeVariable(id, idleft, idright);
            RESULT = GeneradorTAC.variable(id, ty, idleft, idright); :}
     | acceso_arreglo:e {: RESULT = e; :}
     | llamada_funcion:e {: RESULT = e; :}
@@ -369,7 +370,8 @@ arg_write ::= literal:e {: RESULT = e; :}
         {: String ty = Semantico.unaria("-", n, oleft, oright);
            RESULT = GeneradorTAC.unaria("-", n, ty, oleft, oright); :}
     | ID:id
-        {: String ty = Semantico.tipoDe(Semantico.usarVariable(id, idleft, idright));
+        {: // ID sin ʃ: :ʅ; con ʃ: :ʅ el parser usa acceso_arreglo
+           String ty = Semantico.valorDeVariable(id, idleft, idright);
            RESULT = GeneradorTAC.variable(id, ty, idleft, idright); :}
     | acceso_arreglo:e {: RESULT = e; :};
 
