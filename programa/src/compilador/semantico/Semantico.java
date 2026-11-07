@@ -140,7 +140,7 @@ public final class Semantico {
             // Lógicos: λ (and), θ (or)
             case "λ":
             case "θ":
-                return "bool";
+                return logica(a.getTipo(), op, b.getTipo(), linea, columna);
 
             // Aritméticos: + - * / // mod pot
             default:
@@ -174,6 +174,24 @@ public final class Semantico {
             return Expr.ERROR;
         }
 
+        return "bool";
+    }
+
+    /**
+     * Operación lógica: λ (and), θ (or).
+     * @Entrada: tipo de cada operando, operador y posición del operador.
+     * @Salida: "bool" o "error".
+     * @Restricciones: los dos operandos deben ser bool.
+     */
+    private static String logica(String tipoA, String op, String tipoB, int linea, int columna) {
+        if (!esSegundaPasada()) {
+            return Expr.ERROR;
+        }
+        // Los dos lados deben ser bool
+        if (!tipoA.equals("bool") || !tipoB.equals("bool")) {
+            ErrorReporter.semantico("El operador '" + op + "' solo acepta bool, se recibió " + tipoA + " y " + tipoB, columna, linea);
+            return Expr.ERROR;
+        }
         return "bool";
     }
 
@@ -218,12 +236,27 @@ public final class Semantico {
      * Operación unaria: negativo de un literal o negación lógica.
      * @Entrada: operador, operando y posición del operador.
      * @Salida: tipo del resultado o "error".
+     * @Restricciones: Σ solo acepta bool; el negativo no se valida porque la gramática
+     *                 solo lo permite sobre literales numéricos.
      */
     public static String unaria(String op, Expr a, int linea, int columna) {
         if (Expr.esError(a)) {
             return Expr.ERROR;
         }
-        return "Σ".equals(op) ? "bool" : a.getTipo();
+        // Negativo: mismo tipo del literal
+        if (op.equals("-")) {
+            return a.getTipo();
+        }
+
+        // Negación Σ: solo bool
+        if (!esSegundaPasada()) {
+            return Expr.ERROR;
+        }
+        if (!a.getTipo().equals("bool")) {
+            ErrorReporter.semantico("El operador 'Σ' solo acepta bool, se recibió " + a.getTipo(), columna, linea);
+            return Expr.ERROR;
+        }
+        return "bool";
     }
 
     /**
