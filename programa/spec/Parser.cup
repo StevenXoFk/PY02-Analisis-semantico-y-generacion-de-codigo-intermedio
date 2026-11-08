@@ -300,11 +300,13 @@ lista_argumentos_funcion ::= argumento_funcion:e COMA lista_argumentos_funcion:l
 
 llamada_funcion ::= ID:id OPEN_PAREN lista_argumentos_funcion:l CLOSE_PAREN
         {: String ty = Semantico.llamada(id, l, idleft, idright);
-           RESULT = GeneradorTAC.llamada(id, l, ty, idleft, idright); :}
+           RESULT = GeneradorTAC.llamada(id, l, ty, idleft, idright);
+           RESULT.marcarLlamadaOIncremento(); :}
     | ID:id OPEN_PAREN CLOSE_PAREN
         {: java.util.ArrayList l = new java.util.ArrayList();
            String ty = Semantico.llamada(id, l, idleft, idright);
-           RESULT = GeneradorTAC.llamada(id, l, ty, idleft, idright); :};
+           RESULT = GeneradorTAC.llamada(id, l, ty, idleft, idright);
+           RESULT.marcarLlamadaOIncremento(); :};
 
 literal ::= literal_numerico:e {: RESULT = e; :}
     | LIT_CHAR:v {: RESULT = GeneradorTAC.literal(v, Semantico.literal("char"), vleft, vright); :}
@@ -364,14 +366,18 @@ valor_arreglo ::= literal_numerico:e {: RESULT = e; :}
 valores ::= valor_arreglo:x COMA valores:l {: l.add(0, x); RESULT = l; :}
     | valor_arreglo:x {: RESULT = new java.util.ArrayList(); RESULT.add(x); :};
 
-sentencia_expr ::= valor_asignable:e FIN_SENTENCIA {: RESULT = GeneradorTAC.sentenciaExpr(e); :};
+sentencia_expr ::= valor_asignable:e FIN_SENTENCIA
+        {: Semantico.sentenciaExpresion(e);
+           RESULT = GeneradorTAC.sentenciaExpr(e); :};
 
 expr_incremento ::= ID:id OP_INCREMENTO
         {: String ty = Semantico.incremento(id, "++", idleft, idright);
-           RESULT = GeneradorTAC.incremento(id, "++", ty, idleft, idright); :}
+           RESULT = GeneradorTAC.incremento(id, "++", ty, idleft, idright);
+           RESULT.marcarLlamadaOIncremento(); :}
     | ID:id OP_DECREMENTO
         {: String ty = Semantico.incremento(id, "--", idleft, idright);
-           RESULT = GeneradorTAC.incremento(id, "--", ty, idleft, idright); :};
+           RESULT = GeneradorTAC.incremento(id, "--", ty, idleft, idright);
+           RESULT.marcarLlamadaOIncremento(); :};
 
 arg_read ::= ID:id {: RESULT = id; :};
 

@@ -522,11 +522,43 @@ public final class Semantico {
     }
 
     /**
+     * Expresión usada sola como sentencia, por ejemplo: doble є: 5 :э » o a++ ».
+     * @Entrada: la expresión.
+     * @Salida: error si la expresión no hace nada (su resultado se pierde).
+     * @Restricciones: solo se permiten llamadas a función y ++/-- (Anexo I, punto e: "en algunos
+     *                 casos, sólo expresiones sin asignación"). Es la misma regla de Java.
+     */
+    public static void sentenciaExpresion(Expr expresion) {
+        // Pasada 1, o la expresión ya traía error: se ignora
+        if (!esSegundaPasada() || Expr.esError(expresion)) {
+            return;
+        }
+        // Solo una llamada o un ++/-- hacen algo por sí solos
+        if (!expresion.isLlamadaOIncremento()) {
+            ErrorReporter.semantico("La expresión no es una sentencia válida; solo se permiten llamadas a función, ++ o --",
+                    expresion.getColumna(), expresion.getLinea());
+        }
+    }
+
+    /**
      * Tercera sección del for cuando es una expresión (no una asignación).
      * @Entrada: expresión de la actualización.
-     * @Salida: error según la decisión pendiente (solo incremento o cualquier expresión).
+     * @Salida: error si no es numérica.
+     * @Restricciones: acepta operaciones algebraicas (indicación del profesor), por ejemplo
+     *                 i++ o i + b * 3; el resultado debe ser int o float. El error se ubica en
+     *                 la posición de la expresión.
      */
     public static void actualizacionFor(Expr actualizacion) {
+        // Pasada 1, o la expresión ya traía error: se ignora
+        if (!esSegundaPasada() || Expr.esError(actualizacion)) {
+            return;
+        }
+        // Debe ser una expresión algebraica: int o float
+        String tipo = actualizacion.getTipo();
+        if (!tipo.equals("int") && !tipo.equals("float")) {
+            ErrorReporter.semantico("La actualización del for debe ser numérica (int o float), se recibió " + tipo,
+                    actualizacion.getColumna(), actualizacion.getLinea());
+        }
     }
 
     /**

@@ -1,0 +1,36 @@
+| ============================================================
+| Objetivo: verificar la tercera sección del for (actualización): operaciones algebraicas
+|           con resultado int o float, o una asignación.
+| Resultado esperado: 5 errores semánticos, en las líneas 27 a 31.
+|   L27: bool en la actualización
+|   L28: string en la actualización
+|   L29: mezcla int y float (error del operador, sin error extra del for)
+|   L30: variable no declarada (un solo error)
+|   L31: asignación con tipo distinto (lo reporta asignacion)
+| ============================================================
+
+val int notas ʃ: 3 :ʅ »
+
+void principal є: :э ¿:
+    val int b Ͱ 2 »
+    val float f Ͱ 1.0 »
+    | ---- válidos ----
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » i++ :э ¿: b++ » :?
+    for є: val int i Ͱ 9 » ʃ: i :ʅ > ʃ: 0 :ʅ » i-- :э ¿: b++ » :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » i + 2 :э ¿: b++ » :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » i + b * 3 :э ¿: b++ » :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » i + notas ʃ: 0 :ʅ :э ¿: b++ » :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » i + doble є: b :э :э ¿: b++ » :?
+    for є: val float x Ͱ 0.0 » ʃ: x :ʅ < ʃ: 9.0 :ʅ » f * 2.0 :э ¿: b++ » :?
+    for є: val int i Ͱ 9 » ʃ: i :ʅ > ʃ: 0 :ʅ » i Ͱ i - 1 :э ¿: b++ » :?
+    | ---- errores ----
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » true :э ¿: b++ » :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » "hola" :э ¿: b++ » :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » i + f :э ¿: b++ » :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » i + noExiste :э ¿: b++ » :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 9 :ʅ » i Ͱ 2.5 :э ¿: b++ » :?
+:?
+
+int doble є: int x :э ¿:
+    return x * 2 »
+:?
