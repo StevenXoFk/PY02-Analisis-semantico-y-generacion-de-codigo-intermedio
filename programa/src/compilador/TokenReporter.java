@@ -50,6 +50,7 @@ public class TokenReporter {
         }
         try (BufferedWriter w = Files.newBufferedWriter(ruta, StandardCharsets.UTF_8)) {
             w.write(String.format(FORMATO, "Linea", "Columna", "Token", "Lexema", "Tabla", "Info"));
+            w.write(String.format(FORMATO, "------", "-------", "-----", "------", "-----", "----"));
             for (Symbol t : tokens) {
                 String lexema = lexema(t);
                 String tabla;

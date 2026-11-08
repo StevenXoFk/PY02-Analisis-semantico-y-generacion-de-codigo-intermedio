@@ -40,6 +40,8 @@ public class ReporteSimbolos {
                 escribirTabla(w, GestorTablas.getGlobal());
             }
 
+            w.write("=".repeat(80));
+            w.newLine();
             w.write("TABLA DE CONSTANTES");
             w.newLine();
             w.write(String.format("%-30s %-8s %s", "Valor", "Tipo", "Línea"));
@@ -50,6 +52,8 @@ public class ReporteSimbolos {
             }
             w.newLine();
 
+            w.write("=".repeat(80));
+            w.newLine();
             w.write("TABLA DE PALABRAS RESERVADAS");
             w.newLine();
             w.write(String.format("%-30s %-12s %s", "Lexema", "Token", "Línea"));
@@ -71,6 +75,8 @@ public class ReporteSimbolos {
         if (tabla.getPadre() != null) {
             encabezado += ", padre: " + tabla.getPadre().getNombre();
         }
+        w.write("=".repeat(80));
+        w.newLine();
         w.write(encabezado + ")");
         w.newLine();
 
