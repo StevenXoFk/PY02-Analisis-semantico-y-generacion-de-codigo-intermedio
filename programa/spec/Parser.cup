@@ -39,6 +39,16 @@ parser code {:
         ErrorReporter.sintactico("Error no recuperable en '" + (sim.value != null ? sim.value : "?") + "'",
         sim.right, sim.left);
     }
+
+    /**
+     * Token que el parser ya leyó y todavía no procesó (el que sigue).
+     * @Entrada: ninguna.
+     * @Salida: el siguiente token.
+     * @Restricciones: cur_token es protected en CUP; este método lo deja leer desde las acciones.
+     */
+    public Symbol siguienteToken() {
+        return cur_token;
+    }
 :};
 
 //  ===== Terminales =====
@@ -385,10 +395,12 @@ sent_write ::= WRITE:w OPEN_PAREN arg_write:e CLOSE_PAREN FIN_SENTENCIA
 
 sent_return ::= RETURN:r expr_retorno:e FIN_SENTENCIA
         {: Semantico.retorno(e, rleft, rright);
+           Semantico.codigoDespues("return", parser.siguienteToken());
            RESULT = GeneradorTAC.retorno(e); :};
 
 sent_break ::= BREAK:b FIN_SENTENCIA
         {: Semantico.romper(bleft, bright);
+           Semantico.codigoDespues("break", parser.siguienteToken());
            RESULT = GeneradorTAC.romper(); :};
 
 sentencia_var ::= creacion_simple:c {: RESULT = c; :}

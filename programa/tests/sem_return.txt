@@ -1,0 +1,47 @@
+| ============================================================
+| Objetivo: verificar return (tipo de la función, no en principal) y que no haya funciones string.
+| Resultado esperado: 5 errores semánticos, en las líneas 14, 34, 38, 42 y 45.
+|   L14: return en principal
+|   L34: return float en una función int
+|   L38: return int en una función float
+|   L42: 'noExiste' no está declarada (sin error extra de return)
+|   L45: función que retorna string
+| ============================================================
+
+void principal є: :э ¿:
+    val int r Ͱ doble є: 2 :э »
+    val bool p Ͱ positivo є: 3 :э »
+    return 1 »
+:?
+
+| ---- válidos ----
+int doble є: int x :э ¿:
+    if є: ʃ: x :ʅ > ʃ: 10 :ʅ :э ¿:
+        return x »
+    :?
+    while є: true :э ¿:
+        return x * 2 »
+    :?
+    return 0 »
+:?
+
+bool positivo є: int x :э ¿:
+    return ʃ: x :ʅ > ʃ: 0 :ʅ »
+:?
+
+| ---- errores ----
+int entero є: :э ¿:
+    return 2.5 »
+:?
+
+float decimal є: int x :э ¿:
+    return x »
+:?
+
+int perdido є: :э ¿:
+    return noExiste »
+:?
+
+string saludo є: :э ¿:
+    return "hola" »
+:?

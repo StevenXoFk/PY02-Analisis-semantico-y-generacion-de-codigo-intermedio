@@ -76,10 +76,10 @@ int doble є: int x :э ¿:
     return x * 2 »
 :?
 
-| -------- funcion que retorna string (error semántico, no sintáctico) --------
-string saludo є: :э ¿:
-    val string s Ͱ "hola" »
-    return s »
+| -------- funcion que retorna char --------
+char inicial є: :э ¿:
+    val char c Ͱ 'h' »
+    return c »
 :?
 
 bool positivo є: int x :э ¿:

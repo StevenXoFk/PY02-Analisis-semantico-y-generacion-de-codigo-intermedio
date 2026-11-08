@@ -2,9 +2,12 @@ package compilador.semantico;
 
 import compilador.ErrorReporter;
 import compilador.atributos.Expr;
+import compilador.generated.sym;
 import compilador.simbolos.Simbolo;
 import compilador.simbolos.TablaSimbolos;
+import java_cup.runtime.Symbol;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,6 +35,9 @@ public final class Semantico {
 
     private static TablaSimbolos tablaGlobal = null;
 
+    // Funciones que tienen al menos un return (se llena en la pasada 2)
+    private static List<Simbolo> funcionesConReturn = new ArrayList<>();
+
     private Semantico() { }
 
     /**
@@ -41,6 +47,7 @@ public final class Semantico {
      */
     public static void iniciar(TablaSimbolos global) {
         tablaGlobal = global;
+        funcionesConReturn.clear();
     }
 
     /**
@@ -50,6 +57,7 @@ public final class Semantico {
      */
     public static void reiniciar() {
         tablaGlobal = null;
+        funcionesConReturn.clear();
     }
 
     /**
@@ -353,18 +361,49 @@ public final class Semantico {
      * Llamada a función.
      * @Entrada: nombre, argumentos en orden y posición.
      * @Salida: tipo de retorno de la función o "error".
-     * @Restricciones: sábado: existe, mismo número, orden y tipo de argumentos.
+     * @Restricciones: la función debe existir y recibir la misma cantidad de argumentos, en el
+     *                 mismo orden y del mismo tipo que sus parámetros. principal no se puede
+     *                 llamar porque es palabra reservada (error sintáctico).
      */
     public static String llamada(String nombre, List<Expr> argumentos, int linea, int columna) {
         if (!esSegundaPasada()) {
             return Expr.ERROR;
         }
-        // Las funciones son visibles en todo el archivo: se buscan desde la global
-        Simbolo f = tablaGlobal.buscarLocal(nombre);
-        if (f == null || f.getCategoria() != Simbolo.Categoria.FUNCION) {
+        // Las funciones son visibles en todo el archivo: se buscan en la global
+        Simbolo funcion = tablaGlobal.buscarLocal(nombre);
+        if (funcion == null) {
+            ErrorReporter.semantico("La función '" + nombre + "' no está declarada", columna, linea);
             return Expr.ERROR;
         }
-        return f.getTipo();
+
+        // Una variable global no se puede llamar
+        if (funcion.getCategoria() != Simbolo.Categoria.FUNCION) {
+            ErrorReporter.semantico("'" + nombre + "' no es una función", columna, linea);
+            return Expr.ERROR;
+        }
+
+        // Misma cantidad de argumentos que de parámetros
+        List<Simbolo> parametros = funcion.getParametros();
+        if (argumentos.size() != parametros.size()) {
+            ErrorReporter.semantico("'" + nombre + "' espera " + parametros.size() + " argumento(s), se dieron " + argumentos.size(), columna, linea);
+            return funcion.getTipo();
+        }
+
+        // Cada argumento del tipo de su parámetro, en el mismo orden
+        for (int i = 0; i < argumentos.size(); i++) {
+            Expr argumento = argumentos.get(i);
+            Simbolo parametro = parametros.get(i);
+
+            // El argumento ya traía error: se salta
+            if (Expr.esError(argumento)) {
+                continue;
+            }
+            // Debe ser del tipo de su parámetro
+            if (!compatible(parametro.getTipo(), argumento.getTipo())) {
+                ErrorReporter.semantico("El argumento " + (i + 1) + " de '" + nombre + "' debe ser " + parametro.getTipo() + ", se recibió " + argumento.getTipo(), argumento.getColumna(), argumento.getLinea());
+            }
+        }
+        return funcion.getTipo();
     }
 
     /**
@@ -494,8 +533,61 @@ public final class Semantico {
      * Sentencia return.
      * @Entrada: valor retornado y posición de "return".
      * @Salida: error si no coincide con el tipo de la función que lo contiene o si está en principal.
+     * @Restricciones: principal es void, así que no puede tener return (la gramática exige valor).
      */
     public static void retorno(Expr valor, int linea, int columna) {
+        if (!esSegundaPasada()) {
+            return;
+        }
+
+        // 1. Tabla donde está el return
+        long posicion = TablaSimbolos.posicion(linea, columna);
+        TablaSimbolos alcance = tablaGlobal.tablaMasInterna(posicion);
+
+        // 2. Desde ahí, buscar hacia afuera el cuerpo de la función (o de principal)
+        TablaSimbolos cuerpo = alcance.ancestroDeClase(
+                TablaSimbolos.Clase.FUNCION,
+                TablaSimbolos.Clase.PRINCIPAL);
+        // No debería pasar: un return fuera de una función es error sintáctico
+        if (cuerpo == null) {
+            return;
+        }
+
+        // 3. principal es void: no tiene return
+        if (cuerpo.getClase() == TablaSimbolos.Clase.PRINCIPAL) {
+            ErrorReporter.semantico("principal es void, no puede tener return", columna, linea);
+            return;
+        }
+
+        // 4. Buscar la función, la última declarada antes de su cuerpo
+        Simbolo funcion = null;
+        for (Simbolo simbolo : tablaGlobal.getSimbolos()) {
+            // Solo funciones
+            if (simbolo.getCategoria() != Simbolo.Categoria.FUNCION) {
+                continue;
+            }
+            // Solo las que están antes del cuerpo; la última que cumpla es la buscada
+            if (simbolo.getPosicion() < cuerpo.getInicio()) {
+                funcion = simbolo;
+            }
+        }
+        // No debería pasar: toda función se declara antes de su cuerpo
+        if (funcion == null) {
+            return;
+        }
+
+        // 5. Anotar que esta función tiene return (aunque el valor tenga error)
+        funcionesConReturn.add(funcion);
+
+        // El valor ya traía error: se ignora
+        if (Expr.esError(valor)) {
+            return;
+        }
+
+        // 6. El valor debe ser del tipo de la función
+        if (!compatible(funcion.getTipo(), valor.getTipo())) {
+            ErrorReporter.semantico("'" + funcion.getLexema() + "' retorna " + funcion.getTipo() + ", pero el return da " + valor.getTipo(), columna, linea);
+        }
     }
 
     /**
@@ -522,6 +614,24 @@ public final class Semantico {
         if (ciclo == null) {
             ErrorReporter.semantico("break solo puede ir dentro de un while o un for", columna, linea);
         }
+    }
+
+    /**
+     * Código después de un return o un break, en el mismo bloque.
+     * @Entrada: palabra ("return" o "break") y el token que sigue a su ».
+     * @Salida: error si después viene otra sentencia (código que nunca se ejecuta).
+     * @Restricciones: el parser ya leyó el token siguiente al reducir la sentencia; si no es
+     *                 el :? que cierra el bloque, hay otra sentencia en el mismo bloque.
+     */
+    public static void codigoDespues(String palabra, Symbol siguiente) {
+        if (!esSegundaPasada()) {
+            return;
+        }
+        // Lo único que puede seguir es el cierre del bloque (o el fin del archivo)
+        if (siguiente.sym == sym.CLOSE_LLAVES || siguiente.sym == sym.EOF) {
+            return;
+        }
+        ErrorReporter.semantico("Código inalcanzable después de " + palabra, siguiente.right, siguiente.left);
     }
 
     /**
@@ -570,7 +680,8 @@ public final class Semantico {
     }
 
     /**
-     * Validaciones que se hacen una vez sobre el árbol completo: unicidad.
+     * Validaciones que se hacen una vez sobre el árbol completo: unicidad, funciones string y
+     * funciones sin return.
      * @Entrada: Ninguna (usa la tabla global).
      * @Salida: errores reportados.
      * @Restricciones: el único principal ya lo exige la gramática (error sintáctico).
@@ -580,20 +691,45 @@ public final class Semantico {
             return;
         }
         revisarTabla(tablaGlobal);
+
+        // Toda función debe tener al menos un return
+        for (Simbolo simbolo : tablaGlobal.getSimbolos()) {
+            if (simbolo.getCategoria() != Simbolo.Categoria.FUNCION) {
+                continue;
+            }
+            if (!funcionesConReturn.contains(simbolo)) {
+                ErrorReporter.semantico("La función '" + simbolo.getLexema() + "' debe tener al menos un return", simbolo.getColumna(), simbolo.getLinea());
+            }
+        }
     }
 
     /**
-     * Reporta los símbolos redeclarados de una tabla y de sus tablas hijas.
+     * Reporta los símbolos redeclarados de una tabla y de sus tablas hijas, y las funciones
+     * que retornan string.
      * @Entrada: tabla a revisar.
-     * @Salida: un error semántico por cada redeclaración.
+     * @Salida: un error semántico por cada redeclaración y por cada función string.
+     * @Restricciones: las funciones solo retornan int, float, char o bool (Anexo I, punto q).
      */
     private static void revisarTabla(TablaSimbolos tabla) {
+        // 1. Revisar cada símbolo de esta tabla
         for (Simbolo simbolo : tabla.getSimbolos()) {
+            String nombre = simbolo.getLexema();
+
+            // Redeclarado en esta misma tabla (la marca la puso TablaSimbolos.agregar)
             if (simbolo.isRedeclarada()) {
                 int lineaPrimera = simbolo.getPrimeraDeclaracion().getLinea();
-                ErrorReporter.semantico("Redeclaración de '" + simbolo.getLexema() + "' (primera declaración en la línea " + lineaPrimera + ")", simbolo.getColumna(), simbolo.getLinea());
+                ErrorReporter.semantico("Redeclaración de '" + nombre + "' (primera declaración en la línea " + lineaPrimera + ")",
+                        simbolo.getColumna(), simbolo.getLinea());
+            }
+
+            // Una función no puede retornar string
+            if (simbolo.getCategoria() == Simbolo.Categoria.FUNCION && simbolo.getTipo().equals("string")) {
+                ErrorReporter.semantico("La función '" + nombre + "' no puede retornar string (solo int, float, char o bool)",
+                        simbolo.getColumna(), simbolo.getLinea());
             }
         }
+
+        // 2. Hacer lo mismo con cada tabla hija (la función se llama a sí misma)
         for (TablaSimbolos hija : tabla.getHijos()) {
             revisarTabla(hija);
         }
