@@ -1,0 +1,38 @@
+| ============================================================
+| Objetivo: verificar que break solo esté dentro de un while o un for.
+| Resultado esperado: 3 errores semánticos, en las líneas 25, 27 y 36.
+|   L25: break suelto en principal
+|   L27: break en un if sin ciclo alrededor
+|   L36: break en una función, fuera del while
+| ============================================================
+
+void principal є: :э ¿:
+    val int a Ͱ 0 »
+    | ---- válidos ----
+    while є: ʃ: a :ʅ < ʃ: 5 :ʅ :э ¿:
+        break »
+    :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 3 :ʅ » i++ :э ¿:
+        break »
+    :?
+    while є: true :э ¿:
+        if є: ʃ: a :ʅ == ʃ: 3 :ʅ :э ¿:
+            break »
+        :?
+        a++ »
+    :?
+    | ---- errores ----
+    break »
+    if є: true :э ¿:
+        break »
+    :?
+:?
+
+int contar є: int n :э ¿:
+    val int c Ͱ 0 »
+    while є: ʃ: c :ʅ < ʃ: n :ʅ :э ¿:
+        break »
+    :?
+    break »
+    return c »
+:?

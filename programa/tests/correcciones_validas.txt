@@ -17,7 +17,7 @@ void principal є: :э ¿:
 
     | ---- write: solo literales o variables ----
     write є: "Hola" :э »
-    write є: 'c' :э »
+    write є: "c" :э »
     write є: 25 :э »
     write є: 3.5 :э »
     write є: -7 :э »

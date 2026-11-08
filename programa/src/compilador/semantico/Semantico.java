@@ -72,13 +72,13 @@ public final class Semantico {
             return null;
         }
         // Alcance donde está el uso
-        long pos = TablaSimbolos.posicion(linea, columna);
-        TablaSimbolos alcance = tablaGlobal.tablaMasInterna(pos);
+        long posicion = TablaSimbolos.posicion(linea, columna);
+        TablaSimbolos alcance = tablaGlobal.tablaMasInterna(posicion);
         if (alcance == null) {
             alcance = tablaGlobal;
         }
 
-        Simbolo simbolo = alcance.buscarAntesDe(nombre, pos);
+        Simbolo simbolo = alcance.buscarAntesDe(nombre, posicion);
 
         // No declarada (o declarada después del uso)
         if (simbolo == null) {
@@ -105,6 +105,28 @@ public final class Semantico {
      */
     public static String tipoDe(Simbolo s) {
         return s == null ? Expr.ERROR : s.getTipo();
+    }
+
+    /**
+     * Uso de una variable suelta como valor (en una expresión o en write), es decir,
+     * un ID sin ʃ: :ʅ. Si el ID va con ʃ: :ʅ, el parser usa acceso_arreglo y llama a acceso().
+     * @Entrada: nombre y posición del uso.
+     * @Salida: tipo de la variable o "error".
+     * @Restricciones: un arreglo sin ʃ: :ʅ no se puede usar como valor, solo sus elementos.
+     */
+    public static String valorDeVariable(String nombre, int linea, int columna) {
+        // usarVariable ya reporta si no existe o si es una función
+        Simbolo variable = usarVariable(nombre, linea, columna);
+        if (variable == null) {
+            return Expr.ERROR;
+        }
+
+        // Un arreglo sin ʃ: :ʅ no es un valor
+        if (variable.getCategoria() == Simbolo.Categoria.ARREGLO) {
+            ErrorReporter.semantico("'" + nombre + "' es un arreglo; use un elemento con " + nombre + " ʃ: indice :ʅ", columna, linea);
+            return Expr.ERROR;
+        }
+        return variable.getTipo();
     }
 
     /**
@@ -154,7 +176,7 @@ public final class Semantico {
      * @Salida: "bool" o "error".
      * @Restricciones: tipado estricto, no se mezclan int y float.
      *                 < <= > >= solo comparan dos int o dos float;
-     *                 == != comparan dos operandos del mismo tipo.
+     *                 == != además aceptan bool y char, pero no string (Anexo I, punto j).
      */
     private static String relacional(String tipoA, String op, String tipoB, int linea, int columna) {
         if (!esSegundaPasada()) {
@@ -171,6 +193,13 @@ public final class Semantico {
         boolean esNumero = tipoA.equals("int") || tipoA.equals("float");
         if (esOrden && !esNumero) {
             ErrorReporter.semantico("El operador '" + op + "' solo compara números, se recibió " + tipoA, columna, linea);
+            return Expr.ERROR;
+        }
+
+        // == != además aceptan bool y char, pero no string
+        boolean esBoolOChar = tipoA.equals("bool") || tipoA.equals("char");
+        if (!esOrden && !esNumero && !esBoolOChar) {
+            ErrorReporter.semantico("El operador '" + op + "' solo compara int, float, bool o char, se recibió " + tipoA, columna, linea);
             return Expr.ERROR;
         }
 
@@ -263,20 +292,61 @@ public final class Semantico {
      * Incremento o decremento posfijo.
      * @Entrada: nombre de la variable, operador y posición.
      * @Salida: tipo de la variable o "error".
-     * @Restricciones:
+     * @Restricciones: solo variables int o float; no arreglos completos ni funciones.
      */
     public static String incremento(String nombre, String op, int linea, int columna) {
-        return tipoDe(usarVariable(nombre, linea, columna));
+        // usarVariable ya reporta si no existe o si es una función
+        Simbolo variable = usarVariable(nombre, linea, columna);
+        if (variable == null) {
+            return Expr.ERROR;
+        }
+
+        // No se aplica a un arreglo completo
+        if (variable.getCategoria() == Simbolo.Categoria.ARREGLO) {
+            ErrorReporter.semantico("'" + nombre + "' es un arreglo; '" + op + "' solo se aplica a variables", columna, linea);
+            return Expr.ERROR;
+        }
+
+        // Solo int o float
+        String tipo = variable.getTipo();
+        if (!tipo.equals("int") && !tipo.equals("float")) {
+            ErrorReporter.semantico("El operador '" + op + "' solo se aplica a int o float, '" + nombre + "' es " + tipo, columna, linea);
+            return Expr.ERROR;
+        }
+        return tipo;
     }
 
     /**
      * Acceso a un elemento de arreglo a[i].
      * @Entrada: nombre del arreglo, expresión del índice y posición.
      * @Salida: tipo del elemento o "error".
-     * @Restricciones: sábado: el nombre debe ser un arreglo y el índice int.
+     * @Restricciones: el nombre debe ser un arreglo y el índice int.
      */
     public static String acceso(String nombre, Expr indice, int linea, int columna) {
-        return tipoDe(usarVariable(nombre, linea, columna));
+        // Si no existe o es una función, usarVariable ya reportó el error y devuelve null:
+        // aquí solo se sale, sin reportar otra vez
+        Simbolo arreglo = usarVariable(nombre, linea, columna);
+        if (arreglo == null) {
+            return Expr.ERROR;
+        }
+
+        // Solo los arreglos tienen elementos
+        if (arreglo.getCategoria() != Simbolo.Categoria.ARREGLO) {
+            ErrorReporter.semantico("'" + nombre + "' no es un arreglo", columna, linea);
+            return Expr.ERROR;
+        }
+
+        // El índice ya traía error: se ignora
+        if (Expr.esError(indice)) {
+            return Expr.ERROR;
+        }
+
+        // El índice debe ser int
+        if (!indice.getTipo().equals("int")) {
+            ErrorReporter.semantico("El índice de '" + nombre + "' debe ser int, se recibió " + indice.getTipo(), columna, linea);
+            return Expr.ERROR;
+        }
+        return arreglo.getTipo();
     }
 
     /**
@@ -329,8 +399,16 @@ public final class Semantico {
      * Asignación a un elemento de arreglo.
      * @Entrada: destino (Expr del acceso, con nombre e índice), valor y posición.
      * @Salida: errores reportados si no son compatibles.
+     * @Restricciones: el acceso (arreglo e índice) ya lo validó acceso().
      */
     public static void asignacionArreglo(Expr destino, Expr valor, int linea, int columna) {
+        // Pasada 1, o el acceso o el valor ya tenían error: se ignora
+        if (!esSegundaPasada() || Expr.esError(destino) || Expr.esError(valor)) {
+            return;
+        }
+        if (!compatible(destino.getTipo(), valor.getTipo())) {
+            ErrorReporter.semantico("No se puede asignar un valor de tipo " + valor.getTipo() + " a un elemento de '" + destino.getNombre() + "' de tipo " + destino.getTipo(), columna, linea);
+        }
     }
 
     /**
@@ -352,16 +430,56 @@ public final class Semantico {
      * Creación de arreglo.
      * @Entrada: símbolo del arreglo (con su dimensión) y valores iniciales (lista vacía si no hay).
      * @Salida: errores reportados (tamaño, cantidad o tipo de valores).
+     * @Restricciones: el tamaño debe ser mayor que 0; si hay valores, deben ser exactamente
+     *                 tantos como el tamaño y del mismo tipo del arreglo.
      */
     public static void creacionArreglo(Simbolo simbolo, List<Expr> valores) {
+        if (!esSegundaPasada()) {
+            return;
+        }
+        String nombre = simbolo.getLexema();
+        int tamano = simbolo.getDimension();
+
+        // Tamaño mayor que 0
+        if (tamano <= 0) {
+            ErrorReporter.semantico("El tamaño de '" + nombre + "' debe ser mayor que 0", simbolo.getColumna(), simbolo.getLinea());
+            return;
+        }
+
+        // Sin valores iniciales no hay más que revisar
+        if (valores.isEmpty()) {
+            return;
+        }
+
+        // Tantos valores como el tamaño
+        if (valores.size() != tamano) {
+            ErrorReporter.semantico("'" + nombre + "' tiene tamaño " + tamano + " pero se dieron " + valores.size() + " valores", simbolo.getColumna(), simbolo.getLinea());
+            return;
+        }
+
+        // Cada valor del tipo del arreglo
+        for (Expr valor : valores) {
+            if (!compatible(simbolo.getTipo(), valor.getTipo())) {
+                ErrorReporter.semantico("'" + nombre + "' es de tipo " + simbolo.getTipo() + ", no acepta el valor de tipo " + valor.getTipo(), valor.getColumna(), valor.getLinea());
+            }
+        }
     }
 
     /**
      * Condición de if, elif, while o for.
      * @Entrada: expresión de la condición.
      * @Salida: error si no es bool.
+     * @Restricciones: el error se ubica en la posición de la expresión.
      */
     public static void condicion(Expr condicion) {
+        // Pasada 1, o la condición ya tenía error: se ignora
+        if (!esSegundaPasada() || Expr.esError(condicion)) {
+            return;
+        }
+        // Debe ser bool
+        if (!condicion.getTipo().equals("bool")) {
+            ErrorReporter.semantico("La condición debe ser bool, se recibió " + condicion.getTipo(), condicion.getColumna(), condicion.getLinea());
+        }
     }
 
     /**
@@ -384,24 +502,71 @@ public final class Semantico {
      * Sentencia break.
      * @Entrada: posición de "break".
      * @Salida: error si no hay un while o for que lo contenga dentro de la misma función.
+     * @Restricciones: las funciones no se anidan, así que al subir desde una función no se
+     *                 puede llegar a un ciclo de afuera.
      */
     public static void romper(int linea, int columna) {
+        if (!esSegundaPasada()) {
+            return;
+        }
+        // Tabla donde está el break
+        long posicion = TablaSimbolos.posicion(linea, columna);
+        TablaSimbolos alcance = tablaGlobal.tablaMasInterna(posicion);
+
+        // Desde ahí, buscar hacia afuera un while o un for
+        TablaSimbolos ciclo = alcance.ancestroDeClase(
+                TablaSimbolos.Clase.WHILE,
+                TablaSimbolos.Clase.FOR);
+
+        // Si no hay ningún ciclo alrededor, es error
+        if (ciclo == null) {
+            ErrorReporter.semantico("break solo puede ir dentro de un while o un for", columna, linea);
+        }
     }
 
     /**
      * Sentencia read.
      * @Entrada: nombre de la variable y posición.
      * @Salida: error si no es una variable int, float o char.
+     * @Restricciones: tipos según el Anexo I, punto p.
      */
     public static void leer(String nombre, int linea, int columna) {
+        // usarVariable ya reporta si no existe o si es una función
+        Simbolo variable = usarVariable(nombre, linea, columna);
+        if (variable == null) {
+            return;
+        }
+
+        // No en un arreglo completo
+        if (variable.getCategoria() == Simbolo.Categoria.ARREGLO) {
+            ErrorReporter.semantico("'" + nombre + "' es un arreglo; read solo lee en variables", columna, linea);
+            return;
+        }
+
+        // Solo int, float o char
+        String tipo = variable.getTipo();
+        boolean sePuedeLeer = tipo.equals("int") || tipo.equals("float") || tipo.equals("char");
+        if (!sePuedeLeer) {
+            ErrorReporter.semantico("read solo lee int, float o char; '" + nombre + "' es " + tipo, columna, linea);
+        }
     }
 
     /**
      * Sentencia write.
      * @Entrada: valor a escribir y posición de "write".
      * @Salida: error si el tipo no se puede escribir.
+     * @Restricciones: tipos según el Anexo I, punto p (string, int, bool o float; no char).
      */
     public static void escribir(Expr valor, int linea, int columna) {
+        if (!esSegundaPasada() || Expr.esError(valor)) {
+            return;
+        }
+        // Solo string, int, bool o float
+        String tipo = valor.getTipo();
+        boolean sePuedeEscribir = tipo.equals("string") || tipo.equals("int") || tipo.equals("bool") || tipo.equals("float");
+        if (!sePuedeEscribir) {
+            ErrorReporter.semantico("write no puede escribir un valor de tipo " + tipo, columna, linea);
+        }
     }
 
     /**
