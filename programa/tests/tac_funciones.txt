@@ -1,0 +1,15 @@
+val float notas ʃ: 3 :ʅ Ͱ ¿: 1.5, 2.0, 3.5 :? »
+
+int suma є: int a, int b :э ¿:
+    return a + b »
+:?
+
+void principal є: :э ¿:
+    val int x Ͱ 0 »
+    val int y Ͱ 0 »
+    read є: x :э »
+    y Ͱ suma є: x + 1, x * 2 :э »
+    notas ʃ: 0 :ʅ Ͱ 4.5 »
+    write є: y :э »
+    write є: notas ʃ: 1 :ʅ :э »
+:?

@@ -1,0 +1,10 @@
+void principal є: :э ¿:
+    val int a Ͱ 2 »
+    val int b Ͱ a + 3 pot 2 »
+    val int c Ͱ є: a + b :э * 4 mod 3 »
+    val float f Ͱ 10.0 / 4.0 »
+    val int d Ͱ -5 »
+    a++ »
+    val bool ok Ͱ ʃ: a :ʅ < ʃ: b :ʅ »
+    ok Ͱ є: ok :э λ Σ є: false :э »
+:?

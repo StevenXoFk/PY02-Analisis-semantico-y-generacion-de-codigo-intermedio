@@ -11,8 +11,8 @@ import java.util.List;
  * @Entrada: líneas de TAC (instrucciones o etiquetas) y otros Codigo para concatenar.
  * @Salida: lista ordenada de líneas, lista para escribirse en el archivo TAC.
  * @Restricciones:
- * - Las etiquetas se guardan terminadas en ":" y sin sangría; las instrucciones las indenta
- *   GeneradorTAC al escribir el archivo.
+ * - Cada línea ya viene con su formato desde GeneradorTAC: las etiquetas sin sangría y
+ *   terminadas en ":", y las instrucciones con 4 espacios.
  * - Nunca contiene null: agregar(null) no hace nada.
  * @Objetivo: Transportar el código generado de abajo hacia arriba en el parser sin usar
  *            acciones a mitad de producción.
