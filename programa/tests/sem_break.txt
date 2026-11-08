@@ -1,8 +1,8 @@
 | ============================================================
 | Objetivo: verificar que break solo esté dentro de un while o un for.
-| Resultado esperado: 3 errores semánticos, en las líneas 25, 27 y 36.
-|   L25: break suelto en principal
-|   L27: break en un if sin ciclo alrededor
+| Resultado esperado: 3 errores semánticos, en las líneas 26, 28 y 36.
+|   L26: break en un if sin ciclo alrededor
+|   L28: break suelto en principal (al final del bloque, para no tener código después)
 |   L36: break en una función, fuera del while
 | ============================================================
 
@@ -22,10 +22,10 @@ void principal є: :э ¿:
         a++ »
     :?
     | ---- errores ----
-    break »
     if є: true :э ¿:
         break »
     :?
+    break »
 :?
 
 int contar є: int n :э ¿:
@@ -33,6 +33,6 @@ int contar є: int n :э ¿:
     while є: ʃ: c :ʅ < ʃ: n :ʅ :э ¿:
         break »
     :?
-    break »
+    if є: ʃ: c :ʅ > ʃ: 0 :ʅ :э ¿: break » :?
     return c »
 :?

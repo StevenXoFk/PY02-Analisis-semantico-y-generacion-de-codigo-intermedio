@@ -1,0 +1,53 @@
+| ============================================================
+| Objetivo: verificar que toda función tenga return y que no haya código después de un
+|           return o un break en el mismo bloque.
+| Resultado esperado: 5 errores semánticos, en las líneas 24, 26, 41, 46 y 51.
+|   L24: código después de break en el mismo bloque
+|   L26: código después de break en la misma línea
+|   L41: código después de return
+|   L46: un bloque después de return también es código inalcanzable
+|   L51: función sin return
+| ============================================================
+
+void principal є: :э ¿:
+    val int a Ͱ 0 »
+    | ---- válido: el break está en el if, a++ está en el while ----
+    while є: true :э ¿:
+        if є: ʃ: a :ʅ > ʃ: 3 :ʅ :э ¿:
+            break »
+        :?
+        a++ »
+    :?
+    | ---- errores ----
+    while є: true :э ¿:
+        break »
+        a++ »
+    :?
+    for є: val int i Ͱ 0 » ʃ: i :ʅ < ʃ: 3 :ʅ » i++ :э ¿: break » write є: i :э » :?
+:?
+
+| ---- válido: un return en cada rama y otro al final ----
+int signo є: int x :э ¿:
+    if є: ʃ: x :ʅ > ʃ: 0 :ʅ :э ¿:
+        return 1 »
+    :? else ¿:
+        return 0 »
+    :?
+    return 2 »
+:?
+
+int doble є: int x :э ¿:
+    return x * 2 »
+    x++ »
+:?
+
+int anidado є: int x :э ¿:
+    return x »
+    ¿:
+        x++ »
+    :?
+:?
+
+int nada є: int x :э ¿:
+    x++ »
+:?

@@ -23,6 +23,8 @@ public class Expr {
     private final int columna;
     private String nombre;
     private Expr indice;
+    // true si la expresión es una llamada a función o un ++/-- (puede ir sola como sentencia)
+    private boolean llamadaOIncremento = false;
 
     /**
      * Crea una expresión sin lugar ni código.
@@ -67,4 +69,14 @@ public class Expr {
     public void setLugar(String lugar) { this.lugar = lugar; }
     public void setCodigo(Codigo codigo) { this.codigo = codigo != null ? codigo : Codigo.vacio(); }
     public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public boolean isLlamadaOIncremento() { return llamadaOIncremento; }
+
+    /**
+     * Marca la expresión como llamada a función o ++/--.
+     * @Entrada: ninguna.
+     * @Salida: la expresión queda marcada.
+     * @Restricciones: se usa desde las acciones de llamada_funcion y expr_incremento.
+     */
+    public void marcarLlamadaOIncremento() { this.llamadaOIncremento = true; }
 }
