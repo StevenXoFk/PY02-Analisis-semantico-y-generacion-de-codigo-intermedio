@@ -32,7 +32,7 @@ float calcular_promedio є: int n :э ¿:
     if є: ʃ: n :ʅ == ʃ: 0 :ʅ :э ¿:
         return 0.0 »
     :?
-    return suma / n »
+    return suma »
 :?
 
 | Encuentra la nota más alta
