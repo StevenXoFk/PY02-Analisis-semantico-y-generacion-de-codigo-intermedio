@@ -1,4 +1,4 @@
-# Proyecto #1 — Análisis Léxico y Sintáctico
+# Proyecto #2 — Análisis Semántico y Generación de Código Intermedio
 
 **Curso:** Compiladores e Intérpretes GR 60  
 **Profesor:** Allan Rodríguez Dávila  
@@ -9,199 +9,325 @@
 - Angelo Piedra Castro — 2024101262
 - Elian Trejos Quirós — 2024143262
 
+La documentación completa (manual, pruebas con capturas, diseño, análisis de resultados, justificación de la validación semántica y bitácora) está en `documentacion/Documentacion_Proyecto_2.docx`.
+
 ---
 
 ## Descripción
 
-Este proyecto implementa las dos primeras fases de un compilador para un lenguaje imperativo ligero orientado a la configuración de chips:
+Un grupo de desarrolladores quiere crear un lenguaje imperativo ligero para configurar chips de sistemas empotrados. En el Proyecto 1 se construyeron el analizador léxico (JFlex) y el analizador sintáctico (CUP). El Proyecto 2 agrega las dos fases siguientes sobre esa misma gramática:
 
-1. **Análisis léxico** con JFlex.
-2. **Análisis sintáctico** con CUP.
+- **Análisis semántico:** comprueba que el programa tenga sentido además de estar bien escrito. El lenguaje tiene tipado explícito y fuerte, así que se validan los tipos de cada operación, asignación, llamada y retorno, que los nombres estén declarados antes de usarse, que no se repitan en el mismo alcance y que `return` y `break` estén en lugares válidos.
+- **Generación de código intermedio:** traduce el programa a código de tres direcciones con el mismo significado y lo escribe en un archivo.
 
-El programa lee un archivo fuente en UTF-8, reconoce los tokens, valida la sintaxis, reporta los errores encontrados (con línea y columna) y emite un veredicto final.
+Además, se conservan y corrigen los alcances del Proyecto 1, se indica si el archivo puede ser generado considerando gramática, sintaxis y semántica, y los errores léxicos, sintácticos y semánticos se manejan con recuperación en modo pánico (se reporta el error con su línea y el análisis continúa).
 
 ---
 
 ## Requisitos
 
-| Herramienta | Versión sugerida | Notas |
+| Herramienta | Versión | Notas |
 |---|---|---|
-| JDK | 17 o superior | Verificar con `java -version` y `javac -version` |
-| JFlex | 1.9.x (`jflex-full-1.9.1.jar`) | Incluido en `lib/` |
-| CUP | 11b (`java-cup-11b.jar` y `java-cup-11b-runtime.jar`) | Incluidos en `lib/` |
-| Sistema operativo | Windows | Los scripts están probados en Windows |
+| JDK | 17 o superior | `java -version` y `javac -version` deben mostrar la misma versión |
+| JFlex | 1.9.1 (`jflex-full-1.9.1.jar`) | Incluido en `programa/lib/` |
+| CUP | 11b (`java-cup-11b.jar`, `java-cup-11b-runtime.jar`) | Incluidos en `programa/lib/` |
+| Sistema operativo | Windows | `build.bat` y `run.bat` son scripts de Windows |
 
-Los jars de JFlex y CUP están incluidos en `lib/`, por lo que no es necesario descargarlos.
+No hace falta descargar ninguna librería. Los archivos fuente deben estar guardados en UTF-8, porque el lenguaje usa símbolos Unicode (`Ͱ`, `»`, `є:`, `λ`, etc.).
 
 ---
 
 ## Estructura del proyecto
+
 ```
-Proyecto #1
-│
-├── info.txt
-│
-├── documentacion/
-│   ├── Documentacion_Proyecto1.docx
-│   └── bitacora.txt
-│
-└── programa/
-    │
-    ├── lib/
-    │   ├── jflex-full-1.9.1.jar
-    │   ├── java-cup-11b.jar
-    │   └── java-cup-11b-runtime.jar
-    │
-    ├── spec/
-    │   ├── Lexer.flex
-    │   └── Parser.cup
-    │
-    ├── src/
-    │   └── compilador/
-    │       ├── generated/
-    │       │   ├── Lexer.java
-    │       │   ├── Parser.java
-    │       │   └── sym.java
-    │       ├── ErrorReporter.java
-    │       ├── Main.java
-    │       ├── ReportingLexer.java
-    │       ├── TokenReporter.java
-    │       └── PruebaLexer.java
-    │
-    ├── tests/
-    │   ├── validos/
-    │   ├── errores_lexicos/
-    │   ├── errores_sintacticos/
-    │   └── mixtos/
-    │
-    ├── salida/            (se genera al ejecutar)
-    ├── build.bat
-    └── run.bat
+info.txt
+documentacion/
+└── Documentacion_Proyecto_2.docx
+programa/
+├── lib/            jflex-full-1.9.1.jar, java-cup-11b.jar, java-cup-11b-runtime.jar
+├── spec/           Lexer.flex, Parser.cup
+├── src/compilador/
+│   ├── Main.java, ErrorReporter.java, TokenReporter.java, ReportingLexer.java
+│   ├── atributos/  Expr, Codigo, Bloque, Rama
+│   ├── simbolos/   Simbolo, TablaSimbolos, GestorTablas, ReporteSimbolos
+│   ├── semantico/  Semantico
+│   ├── tac/        GeneradorTAC
+│   └── generated/  Lexer, Parser, sym  (los genera build.bat)
+├── tests/          archivos de prueba (.txt)
+├── salida/         reportes generados al ejecutar
+├── build.bat
+└── run.bat
 ```
+
 ---
+
 ## Compilación
 
-Abre PowerShell en la raíz del proyecto y ejecuta:
+Desde la raíz del proyecto:
 
 ```powershell
 cd .\programa\
 .\build.bat
 ```
-El script realiza tres pasos:
 
-1. Genera el parser con CUP (produce Parser.java y sym.java).
+El script hace tres pasos:
 
-2. Genera el scanner con JFlex (produce Lexer.java).
+1. Genera `Parser.java` y `sym.java` con CUP.
+2. Genera `Lexer.java` con JFlex.
+3. Compila todo el código Java en la carpeta `bin`.
 
-3. Compila todo el código Java.
-
-Si la compilación es exitosa, verás el mensaje ```Compilacion exitosa```.
+Si todo sale bien termina con `Compilacion exitosa`. CUP reporta 150 producciones, 260 estados y 0 conflictos.
 
 ## Ejecución
 
-Desde la carpeta `programa/`, ejecuta:
+Desde la carpeta `programa`:
 
 ```powershell
-.\run.bat <nombre>.txt
+.\run.bat tests\programa_prueba.txt
 ```
 
-Por ejemplo:
-
-```powershell
-.\run.bat tests\programa.txt
-```
+El programa analiza el archivo, muestra los errores en la consola y escribe los reportes en `programa/salida/`. Termina con código de salida 0 si el archivo no tiene errores y 1 si tiene errores.
 
 ### Salidas generadas
 
-Para cada archivo analizado `<nombre>.txt` se generan los siguientes resultados.
+Para un archivo `<nombre>.txt` se generan en `programa/salida/`:
 
-**1. `programa/salida/<nombre>_tokens.txt`:** tabla de tokens reconocidos con las siguientes columnas:
-
-| Columna | Descripción |
+| Archivo | Contenido |
 |---|---|
-| Línea | Línea donde aparece el token |
-| Columna | Columna donde aparece el token |
-| Token | Nombre del terminal |
-| Lexema | Texto reconocido |
-| Tabla | Tabla de símbolos a la que pertenece |
-| Info | Información almacenada |
+| `<nombre>_tokens.txt` | Todos los tokens: línea, columna, token, lexema, tabla de símbolos a la que pertenece e información almacenada |
+| `<nombre>_simbolos.txt` | Una tabla de símbolos por alcance (global, cada función, principal, if, elif, else, while, for), más la tabla de constantes y la de palabras reservadas |
+| `<nombre>_errores.txt` | Los errores léxicos, sintácticos y semánticos, ordenados por línea y columna |
+| `<nombre>_tac.txt` | El código intermedio de tres direcciones. Solo se genera si el archivo no tiene errores |
 
-**2. `programa/salida/<nombre>_errores.txt`:** lista de errores léxicos y sintácticos, ordenados por línea y columna.
+En la consola se imprime el veredicto:
 
-**3. Consola:** se imprimen los errores encontrados y un veredicto final:
+- Sin errores: `El archivo se pudo ser generado con éxito`, con la ruta de los tokens, las tablas y el código intermedio.
+- Con errores: `El archivo no puede ser generado por la gramática` y el total de errores.
 
-- Con errores: `El archivo no puede ser generado por la gramática.` (revisar `salida/<nombre>_errores.txt`).
-- Sin errores: `El archivo se pudo generar con éxito.` (archivo de tokens en `salida/<nombre>_tokens.txt`).
+Cada error indica su tipo, línea y columna, por ejemplo:
+
+```
+ERROR SEMÁNTICO en la línea 2, columna 14: La variable 'no_declarada' no está declarada
+```
+
+---
+
+## Uso del lenguaje
+
+| Elemento | Símbolo | Elemento | Símbolo |
+|---|---|---|---|
+| Bloque | `¿: … :?` | Asignación | `Ͱ` |
+| Paréntesis | `є: … :э` | Fin de sentencia | `»` |
+| Índice / operando relacional | `ʃ: … :ʅ` | Y / O / Negación | `λ` / `θ` / `Σ` |
+| Comentario de línea | `\|` | Comentario de bloque | `¡ … !` |
+| Declaración | `val <tipo> <id>` | Potencia / módulo | `pot` / `mod` |
+
+Ejemplo de programa válido:
+
+```
+val float notas ʃ: 3 :ʅ Ͱ ¿: 1.5, 2.0, 3.5 :? »
+
+int suma є: int a, int b :э ¿:
+    return a + b »
+:?
+
+void principal є: :э ¿:
+    val int x Ͱ 0 »
+    val int y Ͱ 0 »
+    read є: x :э »
+    y Ͱ suma є: x + 1, x * 2 :э »
+    notas ʃ: 0 :ʅ Ͱ 4.5 »
+    write є: y :э »
+    write є: notas ʃ: 1 :ʅ :э »
+:?
+```
 
 ---
 
 ## Pruebas
 
-Los casos de prueba se encuentran en `programa/tests/`:
+Los casos están en `programa/tests/`:
 
-| Carpeta | Contenido |
-|---|---|
-| `validos/` | Programas que la gramática debe aceptar |
-| `errores_lexicos/` | Programas con caracteres no reconocidos, strings o comentarios sin cerrar |
-| `errores_sintacticos/` | Programas con errores de sintaxis |
-| `mixtos/` | Programas con errores léxicos y sintácticos combinados |
+| Archivo | Qué prueba | Resultado esperado |
+|---|---|---|
+| `programa_prueba.txt` | Programa completo (sistema de notas) con globales, arreglos, funciones, if/elif/else, while, read y write | Sin errores; genera tokens, tablas y `_tac.txt` |
+| `error_lexico.txt` | Caracteres que no pertenecen al lenguaje (`@`, `#`, `$`, `%`) | 4 errores léxicos (líneas 2 a 5); el análisis continúa después de cada uno |
+| `error_sintactico.txt` | Una sentencia sin `»` al final | 1 error sintáctico en la línea 4; el parser se recupera y sigue |
+| `error_semantico.txt` | Uso de una variable que no fue declarada | 1 error semántico en la línea 2 |
 
-Ejemplo de ejecución sobre un caso válido:
-
-```powershell
-.\run.bat tests\validos\<archivo>.txt
-```
+Cuando hay errores no se genera `_tac.txt`; solo `_tokens.txt`, `_simbolos.txt` y `_errores.txt`. Las capturas de cada ejecución están en la sección 2 de la documentación.
 
 ---
 
 ## Diseño del programa
 
+### Arquitectura
+
+El analizador semántico y el generador de código no recorren un árbol aparte: los llaman las acciones de las producciones de `Parser.cup` (traducción dirigida por la sintaxis).
+
+```
+archivo .txt (UTF-8)
+   │
+   ▼
+Lexer (JFlex) ──► ReportingLexer ──► Parser (CUP)
+                  registra tokens     │  en cada producción:
+                                      │    1. GestorTablas  (tablas de símbolos)
+                                      │    2. Semantico     (valida y calcula el tipo)
+                                      │    3. GeneradorTAC  (arma el código)
+                                      ▼
+             salida/: _tokens.txt, _simbolos.txt, _errores.txt, _tac.txt
+```
+
+### Análisis en dos pasadas
+
+`Main` analiza el archivo dos veces con el mismo lexer y parser:
+
+- **Pasada 1:** solo arma el árbol completo de tablas de símbolos. No valida nada y sus errores se descartan, porque se vuelven a encontrar en la pasada 2.
+- **Pasada 2:** análisis completo. `Semantico.iniciar(tablaGlobal)` recibe el árbol de la pasada 1 y con él se validan todos los usos. Al final, `Semantico.validarDeclaraciones()` hace las revisiones que necesitan el árbol entero (redeclaraciones, funciones sin return, funciones que retornan string).
+
+CUP es un parser ascendente (bottom-up): reduce primero lo más interno, así que cuando procesa una sentencia todavía no cerró el bloque, la función ni el ciclo que la contienen. Con una sola pasada no se podría saber si existe una función llamada en `principal` que está declarada más abajo, a qué función pertenece un `return` ni si un `break` está dentro de un ciclo. Con el árbol de la pasada 1, cada uso se resuelve por su posición: `tablaMasInterna(posición)` encuentra el alcance del uso y `buscarAntesDe(nombre, posición)` busca la declaración visible desde ahí hacia afuera. Las posiciones se guardan como `línea * 100000 + columna` para compararlas fácilmente.
+
 ### Scanner (JFlex) — `spec/Lexer.flex`
 
-- Directivas: `%class Lexer`, `%public`, `%unicode`, `%cup`, `%line`, `%column`, `%state COMENTARIO`.
-- Método auxiliar `symbol(int type)` y macros agrupadas por categoría.
-
-Decisiones de diseño:
-
-- **Orden de las reglas:** los patrones de 2 o más caracteres van antes que los de 1 (`++` antes de `+`, `//` antes de `/`, `<=` antes de `<`).
-- **Palabras reservadas antes que identificadores**, para que `while` no se reconozca como `id`.
-- **Identificadores con `[a-zA-Z_]`:** clases explícitas para evitar que caracteres como `λ`, `θ`, `Σ` se reconozcan como identificadores.
-- **Comentarios de bloque con estado:** `%state COMENTARIO` consume el contenido hasta el cierre. Si se llega a EOF con el comentario abierto, se reporta un error léxico con la línea de apertura.
-- **Recuperación de errores léxicos:** la regla comodín `[^]` reporta el carácter no reconocido (con línea y columna) y continúa. Un string sin cerrar se reporta como error léxico porque no coincide con `litStr`.
-- **Literales:** enteros, flotantes, char, string y booleanos. El signo negativo no forma parte del literal; se resuelve en el parser como operador unario.
+- Directivas: `%class Lexer`, `%public`, `%unicode`, `%cup`, `%line`, `%column`, `%xstate COMENTARIO`.
+- **Comentarios de bloque con `%xstate`:** se usa un estado **exclusivo**. Mientras se está dentro de `¡ … !` solo aplican las reglas del estado `COMENTARIO`, así que ningún texto del comentario se reconoce como token. Con `%state` (inclusivo) también seguirían activas las reglas generales, y una palabra como `while` dentro del comentario podría reconocerse. Si el archivo termina con el comentario abierto, se reporta un error léxico con la línea donde empezó.
+- Palabras reservadas antes que los identificadores, y patrones de varios caracteres antes que los de uno (`++` antes de `+`, `//` antes de `/`), porque JFlex resuelve los empates por el orden de las reglas.
+- Identificadores con clases explícitas `[_a-zA-Z]`, para que `λ`, `θ` y `Σ` no se reconozcan como identificadores.
+- La regla comodín `[^]` reporta cualquier carácter no reconocido con su línea y columna, y el análisis continúa.
+- El signo negativo no forma parte del literal: lo maneja el parser como operador unario.
 
 ### Parser (CUP) — `spec/Parser.cup`
 
-- Bloque `parser code {: :}` con `syntax_error` y `unrecovered_syntax_error`.
-- Declaración de terminales, no terminales y producciones.
+150 producciones, 260 estados y 0 conflictos. Cada producción con significado semántico llama, en este orden:
 
-Decisiones de diseño:
+1. a `GestorTablas` si declara algo o cierra un alcance;
+2. a `Semantico`, que valida y devuelve el tipo del resultado;
+3. a `GeneradorTAC`, que recibe ese tipo y arma el código.
 
-- **Precedencia en la estructura, no con `precedence`:** como se prohíbe la producción genérica `expr ::= expr op expr`, se usa un no terminal por nivel: `expr_modulo → expr_multiplicativa → expr_aditiva → expr_potencia → expr_negativo → expr_primaria`.
-- **Separación de `tipo_arrays` y `tipo_no_arreglo`:** elimina un conflicto reduce/reduce (con un solo `tipo_var`, CUP no podía decidir si `val int x` era variable simple o arreglo con un token de anticipación).
-- **Recuperación en modo pánico:** `lista_sentencias` incluye `error FIN_SENTENCIA lista_sentencias` y `bloque` incluye `OPEN_LLAVES error CLOSE_LLAVES`, de modo que el parser continúa y reporta los errores de las líneas siguientes.
+Todas las acciones van al final de las producciones. No se usan acciones a mitad de producción, porque en esta gramática generan conflictos (por ejemplo, entre `bloque` y su alternativa de error). Los no terminales tienen tipo: las expresiones devuelven `Expr` (tipo, temporal y código), las sentencias devuelven `Codigo` y los bloques devuelven `Bloque` (su tabla y su código).
 
-### Clases Java (`src/compilador/`)
+La precedencia, de mayor a menor (`pot` > `+ -` > `* / //` > `mod`), se refleja en la estructura de la gramática con un no terminal por nivel, sin la producción genérica `expr ::= expr op expr`:
+
+```
+expr_modulo → expr_multiplicativa → expr_aditiva → expr_potencia
+```
+
+`expr_potencia` asocia por la derecha; los demás niveles por la izquierda.
+
+### Correcciones del Proyecto 1
+
+Según la revisión del Proyecto 1 se corrigió:
+
+- Tabla de símbolos por alcance: cada token indica la tabla real a la que pertenece (global, funcion f, principal, if, while…) y se genera el reporte `_simbolos.txt`.
+- Arreglos con tamaño (`val int datos ʃ: 10 :ʅ »`) y creación con valores iniciales `¿: … :?`.
+- `principal` puede ir antes que otras funciones, y las funciones pueden declararse en cualquier orden.
+- `write` solo acepta literales o variables (Anexo I, punto p).
+- `for` con la forma `є: inicio » condición » actualización :э`.
+- Relacionales y lógicas: anidación en `==` y `!=`, encadenamiento de lógicas y negación con `Σ`, también dentro de condiciones.
+- Bloques anidados sueltos dentro de otros bloques.
+- `return` siempre con expresión, y funciones que retornan char.
+
+### Tablas de símbolos
+
+Hay una tabla por alcance, organizada como un árbol: `global` es la raíz, sus hijas son las funciones y `principal`, y dentro de ellas están las tablas de if, elif, else, while, for y los bloques sueltos.
+
+- Los parámetros y el cuerpo de una función forman un solo alcance, que empieza en el `є:` de la función.
+- La variable declarada en el encabezado de un `for` pertenece al alcance del `for`.
+- Las funciones se guardan en la tabla global con su tipo de retorno y la lista de sus parámetros.
+
+`GestorTablas` no usa una pila: anota cada declaración y cada alcance (con su rango de inicio y fin en el código) a medida que el parser los reduce, y al terminar `programa` arma el árbol ubicando cada declaración en el alcance más interno que la contiene. Si en una tabla ya existe el mismo nombre, el símbolo nuevo se guarda marcado como redeclarado y la semántica lo reporta como error de unicidad.
+
+### Analizador semántico
+
+La clase `Semantico` tiene un método por cada construcción del lenguaje (`binaria`, `unaria`, `asignacion`, `llamada`, `retorno`, `romper`, `leer`, `escribir`, etc.). Cada método:
+
+- no hace nada en la pasada 1;
+- si un operando ya viene con tipo `error`, devuelve `error` sin reportar nada nuevo;
+- si encuentra un problema, lo reporta con `ErrorReporter.semantico(mensaje, columna, línea)` y devuelve `error`;
+- si todo está bien, devuelve el tipo del resultado.
+
+### Generador de código intermedio
+
+`GeneradorTAC` genera código de tres direcciones siguiendo el anexo 13. Cada método recibe el código de los hijos y devuelve el del padre, así que el código se arma de abajo hacia arriba, igual que el parser.
+
+| Construcción | Código generado |
+|---|---|
+| Literal o variable | Se copia a un temporal: `t1 = 5`, `t2 = a` |
+| Operación binaria | Un temporal nuevo por operación: `t3 = t1 + t2`; `mod` se escribe `%` y `pot` se escribe `^` |
+| Asignación | `x = t3` |
+| Arreglos | Escritura `notas[t4] = t1`, lectura `t25 = notas[t24]` |
+| if / elif / else | `if t goto if_true_n`, `goto if_false_n`, etiquetas `elif_true_m`, `elif_false_m` e `if_end_n` |
+| while | Etiquetas `while_n`, `while_body_n` y `while_end_n` |
+| for | Inicio, etiquetas `for_n` y `for_body_n`, la actualización al final del cuerpo y `for_end_n` |
+| break | `goto` a la etiqueta de fin del ciclo más cercano |
+| Función | Etiqueta `tipo_nombre:`, `param_tipo nombre` por cada parámetro, cuerpo y `tipo_nombre_end` |
+| Llamada | `param t` por cada argumento y `t = call f, n` (n = cantidad de argumentos) |
+| read / write | `t = call read, 0` y luego `x = t`; `param t` y `call write, 1` |
+| return | `return t` |
+
+Las etiquetas de una misma estructura comparten número (`if_true_1`, `if_false_1`, `if_end_1`) y los temporales son `t1, t2, …` en todo el programa. Para `break`, el generador emite una marca provisional y el `while` o `for` que lo contiene la reemplaza por el salto a su propia etiqueta de fin.
+
+### Recuperación en modo pánico
+
+- `syntax_error(Symbol)` reporta el error con línea y columna; `unrecovered_syntax_error(Symbol)` reporta los errores no recuperables.
+- Producciones `error` que sincronizan con `»` o con el cierre de un bloque: en `lista_sentencias`, `bloque`, `elemento_programa` (globales y encabezados de función) y `condicion`.
+- Los errores léxicos se reportan y el lexer sigue con el siguiente carácter; los semánticos se reportan y el análisis continúa con el tipo `error`.
+
+### Clases Java
 
 | Clase | Responsabilidad |
 |---|---|
-| `Main` | Valida la ruta, lee el archivo en UTF-8, crea `Lexer`, `ReportingLexer` y `Parser`, ejecuta `parser.parse()` dentro de `try/catch`, guarda los errores y emite el veredicto. |
-| `ErrorReporter` | Acumula errores léxicos, sintácticos y semánticos; los ordena por línea y columna; los imprime en consola y los guarda en archivo UTF-8; devuelve el total. |
-| `TokenReporter` | Escribe el archivo de tokens (6 columnas) y clasifica cada token en una tabla de símbolos: *Reservadas*, *Identificadores*, *Constantes* (literales numéricos, char, string y booleanos) o *Ninguna* (operadores, delimitadores, EOF). |
-| `ReportingLexer` | Envuelve el lexer generado por JFlex y registra cada token en el `TokenReporter` antes de entregarlo al parser. |
-| `PruebaLexer` | Utilidad para probar el analizador léxico de forma aislada. |
+| `Main` | Valida la ruta, ejecuta las dos pasadas, escribe los reportes y muestra el veredicto |
+| `ErrorReporter` | Acumula los errores léxicos, sintácticos y semánticos, los ordena por línea y columna, los muestra y los guarda |
+| `ReportingLexer` | Envuelve el lexer de JFlex y registra cada token en `TokenReporter` antes de entregarlo al parser |
+| `TokenReporter` | Escribe el archivo de tokens con la tabla y la información de cada token |
+| `PruebaLexer` | Utilidad para probar el lexer por separado |
+| `atributos.Expr`, `Codigo`, `Bloque`, `Rama` | Lo que viaja en `RESULT` entre las producciones: tipo, temporal y código |
+| `simbolos.Simbolo`, `TablaSimbolos` | Un identificador declarado y la tabla de un alcance |
+| `simbolos.GestorTablas` | Arma el árbol de tablas a partir de las acciones del parser |
+| `simbolos.ReporteSimbolos` | Escribe el archivo `_simbolos.txt` |
+| `semantico.Semantico` | Reglas del análisis semántico |
+| `tac.GeneradorTAC` | Generación del código de tres direcciones y escritura de `_tac.txt` |
 
-### Librerías usadas
+---
 
-| Librería | Descripción |
+## Validación semántica
+
+- **Dónde:** dentro de las acciones de `Parser.cup`, con atributos sintetizados. Cada expresión devuelve un `Expr` con su tipo y el padre usa los tipos de sus hijos para validar y calcular el suyo. Todas las reglas están en la clase `Semantico`; las acciones solo llaman métodos.
+- **Tipado explícito y fuerte:** toda la compatibilidad pasa por un solo método, `compatible(destino, origen)`, que exige tipos iguales. No hay conversión automática de int a float en asignaciones, argumentos, returns ni operaciones.
+- **Sin errores en cascada:** una expresión con error pasa a tener tipo `error`, y cualquier operación que lo reciba no reporta nada nuevo. Las producciones de error del parser devuelven `null`, que también se trata como `error`.
+- **Gramática o semántica:** si una regla depende solo de la forma del código, va en la gramática (un único `principal`, negativo solo sobre literales, `write` solo con literales o variables, arreglos solo de int o float, `return` siempre con valor); si depende de tipos o declaraciones, va en la semántica.
+
+Se implementaron 38 validaciones:
+
+| Tema | Validaciones |
 |---|---|
-| JFlex 1.9.x | Generación del analizador léxico |
-| `java-cup-11b.jar` | Generador del analizador sintáctico |
-| `java-cup-11b-runtime.jar` | Runtime necesario en ejecución |
-| `java.io` | Lectura y escritura de archivos |
-| `java.nio` | Manejo de rutas y codificación |
-| `java.nio.charset.StandardCharsets` | UTF-8 explícito |
-| `java.util` | Listas y comparadores para ordenar errores |
+| Uso de identificadores | Declarada antes de usarse en un alcance visible; una función no se usa como variable; un arreglo no se usa sin índice |
+| Expresiones | `+ - *` entre dos int o dos float; `/` siempre da float; `//`, `mod` y `pot` solo con int; comparaciones entre el mismo tipo; `< <= > >=` solo con números; `== !=` sin string; `λ θ Σ` solo con bool; `++` y `--` solo en variables int o float |
+| Arreglos | Solo se indexa un arreglo; índice int; tamaño mayor que 0; tantos valores iniciales como su tamaño; valores del tipo del arreglo |
+| Asignaciones y declaraciones | Destino declarado y que no sea función; no se asigna a un arreglo completo; el valor es del tipo del destino o del elemento |
+| Funciones | La función existe y es función; misma cantidad y tipo de argumentos, en orden; no retorna string; tiene al menos un `return` |
+| Control de flujo | Condiciones bool; actualización del `for` numérica; `principal` sin `return`; `return` del tipo de su función; `break` solo en `while` o `for`; nada después de un `return` o `break` en el mismo bloque |
+| Sentencias | Una expresión sola como sentencia solo puede ser llamada, `++` o `--`; `read` en variables int, float o char; `write` de string, int, bool o float |
+| Unicidad | No se declara dos veces el mismo nombre en el mismo alcance |
+
+La justificación de cada decisión está en la sección 7 de la documentación.
+
+---
+
+## Librerías usadas
+
+| Librería | Uso |
+|---|---|
+| JFlex 1.9.1 (`jflex-full-1.9.1.jar`) | Genera el analizador léxico a partir de `Lexer.flex`. Solo se usa al compilar |
+| CUP 11b (`java-cup-11b.jar`) | Genera el analizador sintáctico a partir de `Parser.cup`. Solo se usa al compilar |
+| CUP runtime (`java-cup-11b-runtime.jar`) | Clases que necesita el parser al ejecutarse (`Symbol`, `Scanner`, `lr_parser`) |
+| `java.io` | Lectura del archivo fuente y escritura de los reportes |
+| `java.nio.file` (`Path`, `Files`) | Rutas y creación de los archivos de salida |
+| `java.nio.charset.StandardCharsets` | Lectura y escritura explícita en UTF-8 |
+| `java.util` | Listas y comparadores (por ejemplo, para ordenar los errores) |
+
+No se usa ninguna otra librería externa.
 
 ---
 
@@ -209,59 +335,30 @@ Decisiones de diseño:
 
 ### Objetivos alcanzados
 
-- Reconocimiento de todos los tokens del lenguaje.
-- Manejo de comentarios de línea y de bloque.
-- Recuperación de errores léxicos (carácter no reconocido, string sin cerrar, comentario de bloque sin cerrar).
-- Reporte de errores con línea y columna.
-- Gramática LALR(1) sin conflictos.
-- Precedencia y asociatividad correctas.
-- Forma rígida de expresiones relacionales y lógicas.
-- Estructuras de control (`if`, `else`, `elif`, `while`, `for`).
-- Arreglos con creación, acceso y modificación.
-- Recuperación en modo pánico.
-- Archivo de tokens con 6 columnas y tabla de símbolos (reservadas, identificadores, constantes).
-- Archivo de errores ordenado por línea y columna.
+- Se conservaron el análisis léxico y sintáctico del Proyecto 1 y se aplicaron las correcciones de su revisión.
+- Tablas de símbolos por alcance, organizadas como árbol, con reporte en archivo.
+- Análisis semántico con tipado explícito y fuerte (38 validaciones).
+- Errores semánticos con línea y columna, sin errores en cascada, y el análisis continúa.
+- Recuperación en modo pánico para los errores léxicos y sintácticos.
+- Veredicto final que considera los errores léxicos, sintácticos y semánticos.
+- Código de tres direcciones para expresiones, arreglos, estructuras de control, `break`, funciones, llamadas, `read` y `write`, escrito en `_tac.txt`.
+- Documentación interna (entradas, salidas, restricciones y objetivo) en todas las clases.
 
 ### Objetivos no alcanzados
 
-- La recuperación a nivel de frase no se implementó.
+- Puntos extra de recuperación a nivel de frase, producciones de error o corrección global: no se implementaron como tales; la recuperación es en modo pánico.
+- Puntos extra de clases: no se implementaron.
+- Exponente positivo en `pot`: se valida que ambos operandos sean int, pero no se rechaza un exponente literal negativo como `3 pot -1`.
 
----
+### Limitaciones conocidas
 
-## Precedencia y asociatividad
-
-La precedencia, de mayor a menor, se refleja en la estructura de la gramática:
-
-```
-expr_modulo → expr_multiplicativa → expr_aditiva → expr_potencia
-```
-
-Cada nivel es un no terminal separado, cumpliendo la prohibición de la producción genérica.
-
-- **`expr_potencia`:** asociatividad derecha.
-- **`expr_modulo`, `expr_multiplicativa`, `expr_aditiva`:** asociatividad izquierda.
-
----
-
-## Diferencias con la gramática de la Tarea I
-
-- **Separación de `tipo_var`:** la Tarea I definía `tipo_var ::= int | float | string | bool | char`. Se dividió en `tipo_arrays` (`int | float`) y `tipo_no_arreglo` (`bool | string | char`) para eliminar el conflicto reduce/reduce entre variable simple y arreglo, sin perder generalidad.
-- **Unificación de `operando_rel_orden` y `operando_rel_igualdad`:** ambos eran `expr_modulo` y generaban conflicto reduce/reduce; se unificaron en `operando_rel`.
-- **Expansión de `*` y `?`:** las producciones de la Tarea I con `*` y `?` se expandieron a producciones recursivas por la derecha y alternativas, siguiendo el estilo de CUP.
-- **Restricción de `operando_logico`:** la Tarea I definía `operando_logico ::= expr_relacional | expr_negacion | lit_bool | id | llamada_funcion`, lo que generaba conflicto reduce/reduce con `expr_primaria`, porque los paréntesis del lenguaje se usan tanto para agrupar expresiones aritméticas como para envolver operandos lógicos. Como el enunciado indica que los operandos son booleanos y la gramática solo los produce mediante relacionales y negaciones, se restringió a `operando_logico ::= expr_relacional | expr_negacion`.
-
----
-
-## Recuperación en modo pánico
-
-Se implementó con:
-
-- `syntax_error(Symbol)`: reporta el error con línea y columna.
-- `unrecovered_syntax_error(Symbol)`: reporta errores no recuperables.
-- Producciones `error` en `lista_sentencias` y `bloque`, que sincronizan con `FIN_SENTENCIA` y `CLOSE_LLAVES`.
+- El código intermedio solo se genera cuando el archivo no tiene errores, porque el enunciado pide código "con el mismo sentido semántico" que el fuente.
+- No se validan en compilación el índice fuera de rango ni la división entre cero.
 
 ---
 
 ## Bitácora
 
-La bitácora completa está en `documentacion/bitacora.txt` y en el historial de commits del repositorio de GitHub.
+La bitácora autogenerada con `git log` está en la sección 8 de la documentación y en `programa/bitacora.txt`.
+
+Repositorio: https://github.com/StevenXoFk/PY02-Analisis-semantico-y-generacion-de-codigo-intermedio

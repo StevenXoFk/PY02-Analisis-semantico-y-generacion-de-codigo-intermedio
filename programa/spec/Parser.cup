@@ -2,7 +2,7 @@
 // Parser.cup
 //
 // @Entrada: Flujo de tokens del lexer
-// @Salida: 
+// @Salida:
 //   - Arbol de analisis sintactico.
 //   - Los errores sintacticos se reportan a compilador.ErrorReporter
 //
@@ -19,6 +19,15 @@ package compilador.generated;
 
 import java_cup.runtime.*;
 import compilador.ErrorReporter;
+import compilador.simbolos.Simbolo;
+import compilador.simbolos.TablaSimbolos;
+import compilador.simbolos.GestorTablas;
+import compilador.atributos.Codigo;
+import compilador.atributos.Expr;
+import compilador.atributos.Bloque;
+import compilador.atributos.Rama;
+import compilador.semantico.Semantico;
+import compilador.tac.GeneradorTAC;
 
 parser code {:
     public void syntax_error(Symbol sim) {
@@ -29,6 +38,16 @@ parser code {:
     public void unrecovered_syntax_error(Symbol sim) {
         ErrorReporter.sintactico("Error no recuperable en '" + (sim.value != null ? sim.value : "?") + "'",
         sim.right, sim.left);
+    }
+
+    /**
+     * Token que el parser ya leyó y todavía no procesó (el que sigue).
+     * @Entrada: ninguna.
+     * @Salida: el siguiente token.
+     * @Restricciones: cur_token es protected en CUP; este método lo deja leer desde las acciones.
+     */
+    public Symbol siguienteToken() {
+        return cur_token;
     }
 :};
 
@@ -76,311 +95,427 @@ terminal TRUE, FALSE;
 
 // ++++++ No terminales ++++++++
 
-
-non terminal programa;
-non terminal elemento_programa_cm;
-non terminal elemento_programa;
-non terminal funcion;
-non terminal funcion_principal;
-non terminal tipo_retorno;
-non terminal lista_parametros;
-non terminal var_simple;
-non terminal var_arreglo;
-non terminal var_no_arreglo;
-non terminal tipo_arrays;
-non terminal tipo_no_arreglo;
-non terminal bloque;
+non terminal Codigo programa;
+non terminal Codigo elemento_programa_cm;
+non terminal Codigo elemento_programa;
+non terminal Codigo funcion;
+non terminal Codigo funcion_principal;
+non terminal String tipo_retorno;
+non terminal java.util.ArrayList lista_parametros;
+non terminal Simbolo var_simple;
+non terminal Simbolo var_arreglo;
+non terminal Simbolo var_no_arreglo;
+non terminal String tipo_arrays;
+non terminal String tipo_no_arreglo;
+non terminal Bloque bloque;
 
 // Declaraciones y asignaciones
-non terminal declaracion_global;
-non terminal creacion_simple;
-non terminal creacion_asign;
-non terminal asignacion;
-non terminal creacion_arreglo;
-non terminal asignacion_arreglo;
-non terminal valores;
-non terminal valor_asignable;
+non terminal Codigo declaracion_global;
+non terminal Codigo creacion_simple;
+non terminal Codigo creacion_asign;
+non terminal Codigo asignacion;
+non terminal Codigo creacion_arreglo;
+non terminal Integer dimension_arreglo;
+non terminal Codigo asignacion_arreglo;
+non terminal java.util.ArrayList valores;
+non terminal Expr valor_arreglo;
+non terminal Expr valor_asignable;
 
 // Literales y accesos
-non terminal literal;
-non terminal literal_numerico;
-non terminal acceso_arreglo;
-non terminal indice;
+non terminal Expr literal;
+non terminal Expr literal_numerico;
+non terminal Expr acceso_arreglo;
+non terminal Expr indice;
 
 // Sentencias
-non terminal sentencia;
-non terminal lista_sentencias;
-non terminal sentencia_var;
-non terminal sentencia_expr;
-non terminal expr_incremento;
+non terminal Codigo sentencia;
+non terminal Codigo lista_sentencias;
+non terminal Codigo sentencia_var;
+non terminal Codigo sentencia_expr;
+non terminal Expr expr_incremento;
 
 // Lectura, escritura y flujo de control simple
-non terminal sent_read;
-non terminal sent_write;
-non terminal sent_return;
-non terminal sent_break;
-non terminal arg_read;
-non terminal arg_write;
-non terminal expr_retorno;
+non terminal Codigo sent_read;
+non terminal Codigo sent_write;
+non terminal Codigo sent_return;
+non terminal Codigo sent_break;
+non terminal String arg_read;
+non terminal Expr arg_write;
+non terminal Expr expr_retorno;
 
 // Estructuras de control
-non terminal condicion;
-non terminal sent_if;
-non terminal sent_elif;
-non terminal lista_elif;
-non terminal sent_else;
-non terminal sent_while;
-non terminal sent_for;
+non terminal Expr condicion;
+non terminal Codigo sent_if;
+non terminal Rama sent_elif;
+non terminal java.util.ArrayList lista_elif;
+non terminal Codigo sent_else;
+non terminal Codigo sent_while;
+non terminal Codigo sent_for;
+non terminal Codigo for_inicio;
+non terminal Expr for_condicion;
+non terminal Codigo for_actualizacion;
 
 // Expresiones Aritméticas
-non terminal expr_primaria;
-non terminal expr_negativo;
-non terminal expr_potencia;
-non terminal expr_aditiva;
-non terminal expr_multiplicativa;
-non terminal argumento_funcion;
-non terminal lista_argumentos_funcion;
-non terminal llamada_funcion;
+non terminal Expr expr_primaria;
+non terminal Expr expr_parentesis;
+non terminal Expr expr_negativo;
+non terminal Expr expr_potencia;
+non terminal Expr expr_aditiva;
+non terminal Expr expr_multiplicativa;
+non terminal Expr argumento_funcion;
+non terminal java.util.ArrayList lista_argumentos_funcion;
+non terminal Expr llamada_funcion;
 
 
 // Relacionales - Lógicos
-non terminal op_orden;
-non terminal op_igualdad;
-
-// operando_rel_orden y operando_rel_igualdad se unificaron en operando_rel
-// porque ambos eran expr_modulo y generaban conflictos reduce/reduce.
-non terminal operando_rel;
-
-non terminal expr_rel_orden;
-non terminal expr_rel_igualdad;
-non terminal expr_relacional;
-non terminal op_logico;
-non terminal operando_logico;
-non terminal expr_negacion;
-non terminal expr_logica;
+non terminal String op_orden;
+non terminal String op_igualdad;
+non terminal Expr operando_rel;
+non terminal Expr expr_rel_orden;
+non terminal Expr expr_rel_igualdad;
+non terminal Expr expr_relacional;
+non terminal String op_logico;
+non terminal Expr operando_logico;
+non terminal Expr expr_negacion;
+non terminal Expr cadena_logica;
+non terminal Expr expr_logica;
 
 
 // Placeholder para expresiones
-non terminal expr_modulo;
+non terminal Expr expr_modulo;
 
 start with programa;
 
 // +_++++++++ Producciones ++++++++
-tipo_retorno ::= INT
-    | FLOAT
-    | CHAR
-    | BOOL;
-
-// tipo_var se separó en tipo_arrays y tipo_no_arreglo: con un solo
-// tipo_var, "val int" generaba conflicto reduce/reduce contra tipo_arrays.
-tipo_arrays ::= INT
-    | FLOAT;
-
-tipo_no_arreglo ::= BOOL
-    | STRING
-    | CHAR;
-
-var_arreglo ::= tipo_arrays ID;
-
-var_no_arreglo ::= tipo_no_arreglo ID;
-
-var_simple ::= var_arreglo
-    | var_no_arreglo;
-
-lista_parametros ::= var_simple COMA lista_parametros
-    | var_simple;
-
-bloque ::= OPEN_LLAVES lista_sentencias CLOSE_LLAVES
-    | OPEN_LLAVES error CLOSE_LLAVES;
-
-funcion ::= tipo_retorno ID OPEN_PAREN lista_parametros CLOSE_PAREN bloque
-    | tipo_retorno ID OPEN_PAREN CLOSE_PAREN bloque;
-
-funcion_principal ::= VOID PRINCIPAL OPEN_PAREN CLOSE_PAREN bloque;
-
-declaracion_global ::= creacion_simple
-    | creacion_asign
-    | creacion_arreglo;
-
-elemento_programa ::= declaracion_global
-    | funcion;
-
-elemento_programa_cm ::= elemento_programa_cm elemento_programa
-    | ;
-
-programa ::= elemento_programa_cm funcion_principal;
-
-expr_retorno ::= expr_modulo
-    | expr_relacional
-    | expr_logica;
-
-expr_modulo ::= expr_modulo OP_MODULO expr_multiplicativa
-    | expr_multiplicativa;
-
-expr_multiplicativa ::= expr_multiplicativa OP_MULT expr_aditiva
-    | expr_multiplicativa OP_DIV_DECIMAL expr_aditiva
-    | expr_multiplicativa OP_DIV_ENTERA expr_aditiva
-    | expr_aditiva;
-
-expr_aditiva ::= expr_aditiva  OP_SUMA expr_potencia
-    | expr_aditiva  OP_RESTA expr_potencia
-    | expr_potencia;
-
-expr_potencia ::= expr_negativo OP_POTENCIA expr_potencia
-    | expr_negativo;
-
-expr_negativo ::= OP_RESTA literal_numerico
-    | expr_primaria;
-
-expr_primaria ::= literal
-    | ID
-    | acceso_arreglo
-    | llamada_funcion
-    | expr_incremento
-    | OPEN_PAREN expr_modulo CLOSE_PAREN;
-
-
-literal_numerico ::= LIT_INT
-    | LIT_FLOAT;
-
-argumento_funcion ::= expr_modulo;
-
-lista_argumentos_funcion ::= argumento_funcion COMA lista_argumentos_funcion
-    | argumento_funcion;
-
-llamada_funcion ::= ID OPEN_PAREN lista_argumentos_funcion CLOSE_PAREN
-    | ID OPEN_PAREN CLOSE_PAREN;
-
-literal ::= literal_numerico
-    | LIT_CHAR
-    | LIT_STRING
-    | TRUE
-    | FALSE;
-
-indice ::= expr_modulo;
-
-acceso_arreglo ::= ID OPEN_BRACKET indice CLOSE_BRACKET;
-
-valor_asignable ::= expr_modulo
-    | expr_relacional
-    | expr_logica;
-
-creacion_simple ::= VAL var_arreglo FIN_SENTENCIA
-    | VAL var_no_arreglo FIN_SENTENCIA;
-
-creacion_asign ::= VAL var_arreglo ASIGN valor_asignable FIN_SENTENCIA
-    | VAL var_no_arreglo ASIGN valor_asignable FIN_SENTENCIA;
-
-asignacion ::= ID ASIGN valor_asignable FIN_SENTENCIA;
-
-creacion_arreglo ::= VAL var_arreglo ASIGN OPEN_LLAVES valores CLOSE_LLAVES FIN_SENTENCIA;
-
-asignacion_arreglo ::= acceso_arreglo ASIGN valor_asignable FIN_SENTENCIA;
-
-valores ::= literal_numerico COMA valores
-    | literal_numerico;
-
-sentencia_expr ::= valor_asignable FIN_SENTENCIA;
-
-expr_incremento ::= ID OP_INCREMENTO
-    | ID OP_DECREMENTO;
-
-arg_read ::= ID;
-
-arg_write ::= LIT_STRING
-    | LIT_CHAR
-    | LIT_INT
-    | LIT_FLOAT
-    | TRUE
-    | FALSE
-    | ID
-    | acceso_arreglo;
-
-sent_read ::= READ OPEN_PAREN arg_read CLOSE_PAREN FIN_SENTENCIA;
-
-sent_write ::= WRITE OPEN_PAREN arg_write CLOSE_PAREN FIN_SENTENCIA;
-
-sent_return ::= RETURN expr_retorno FIN_SENTENCIA
-    | RETURN FIN_SENTENCIA;
-
-sent_break ::= BREAK FIN_SENTENCIA;
-
-sentencia_var ::= creacion_simple
-    | creacion_asign
-    | asignacion
-    | creacion_arreglo
-    | asignacion_arreglo
-    | sentencia_expr;
-
-sentencia ::= sentencia_var
-    | sent_return
-    | sent_break
-    | sent_read
-    | sent_write
-    | sent_if
-    | sent_while
-    | sent_for;
-
-lista_sentencias ::= sentencia lista_sentencias
-    | error FIN_SENTENCIA lista_sentencias
-    | ;
-
-op_orden ::= OP_MAYOR
-    | OP_MENOR
-    | OP_MAYOR_IGUAL
-    | OP_MENOR_IGUAL;
-
-op_igualdad ::= OP_IGUAL
-    | OP_DIFERENTE;
-
-
-// Unificado desde operando_rel_orden y operando_rel_igualdad
-// para eliminar conflictos reduce/reduce.
-operando_rel ::= expr_modulo;
-
-expr_rel_orden ::= OPEN_BRACKET operando_rel CLOSE_BRACKET op_orden OPEN_BRACKET operando_rel CLOSE_BRACKET;
-
-expr_rel_igualdad ::= OPEN_BRACKET operando_rel CLOSE_BRACKET op_igualdad OPEN_BRACKET operando_rel CLOSE_BRACKET;
-
-expr_relacional ::= expr_rel_orden
-    | expr_rel_igualdad;
-
-op_logico ::= OP_AND
-    | OP_OR;
-
-operando_logico ::= expr_relacional
-    | expr_negacion
-    | TRUE
-    | FALSE
-    | ID
-    | llamada_funcion;
-
-expr_negacion ::= OP_NEGACION OPEN_PAREN operando_logico CLOSE_PAREN;
-
-// El primer operando usa expr_modulo en vez de operando_logico
-// para evitar conflictos reduce/reduce con los paréntesis.
-expr_logica ::= OPEN_PAREN expr_relacional CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
-    | OPEN_PAREN expr_negacion CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
-    | OPEN_PAREN expr_modulo CLOSE_PAREN op_logico OPEN_PAREN operando_logico CLOSE_PAREN
-    | expr_negacion;
-
-condicion ::= OPEN_PAREN expr_relacional CLOSE_PAREN
-    | OPEN_PAREN expr_logica CLOSE_PAREN
-    | OPEN_PAREN TRUE CLOSE_PAREN
-    | OPEN_PAREN FALSE CLOSE_PAREN
-    | OPEN_PAREN ID CLOSE_PAREN
-    | OPEN_PAREN llamada_funcion CLOSE_PAREN;
-
-sent_elif ::= ELIF condicion bloque;
-
-lista_elif ::= lista_elif sent_elif
-    | ;
-
-sent_else ::= ELSE bloque;
-
-sent_if ::= IF condicion bloque lista_elif sent_else
-    | IF condicion bloque lista_elif;
-
-sent_while ::= WHILE condicion bloque;
-
-sent_for ::= FOR sentencia_var condicion FIN_SENTENCIA expr_incremento bloque;
+tipo_retorno ::= INT {: RESULT = "int"; :}
+    | FLOAT {: RESULT = "float"; :}
+    | CHAR {: RESULT = "char"; :}
+    | BOOL {: RESULT = "bool"; :}
+    | STRING {: RESULT = "string"; :};
+
+tipo_arrays ::= INT {: RESULT = "int"; :}
+    | FLOAT {: RESULT = "float"; :};
+
+tipo_no_arreglo ::= BOOL {: RESULT = "bool"; :}
+    | STRING {: RESULT = "string"; :}
+    | CHAR {: RESULT = "char"; :};
+
+var_arreglo ::= tipo_arrays:t ID:id {: RESULT = new Simbolo(id, t, idleft, idright); :};
+
+var_no_arreglo ::= tipo_no_arreglo:t ID:id {: RESULT = new Simbolo(id, t, idleft, idright); :};
+
+var_simple ::= var_arreglo:v {: v.setCategoria(Simbolo.Categoria.PARAMETRO); GestorTablas.declarar(v); RESULT = v; :}
+    | var_no_arreglo:v {: v.setCategoria(Simbolo.Categoria.PARAMETRO); GestorTablas.declarar(v); RESULT = v; :};
+
+lista_parametros ::= var_simple:v COMA lista_parametros:l {: l.add(0, v); RESULT = l; :}
+    | var_simple:v {: RESULT = new java.util.ArrayList(); RESULT.add(v); :};
+
+bloque ::= OPEN_LLAVES:a lista_sentencias:l CLOSE_LLAVES:c
+        {: RESULT = new Bloque(GestorTablas.cerrarBloque(aleft, aright, cleft, cright), l); :}
+    | OPEN_LLAVES:a error CLOSE_LLAVES:c
+        {: RESULT = new Bloque(GestorTablas.cerrarBloque(aleft, aright, cleft, cright), Codigo.vacio()); :};
+
+funcion ::= tipo_retorno:t ID:id OPEN_PAREN:p lista_parametros:l CLOSE_PAREN bloque:b
+        {: GestorTablas.cerrarFuncion(b.getTabla(), id, idleft, idright, t, l, pleft, pright);
+           RESULT = GeneradorTAC.funcion(t, id, l, b.getCodigo()); :}
+    | tipo_retorno:t ID:id OPEN_PAREN:p CLOSE_PAREN bloque:b
+        {: GestorTablas.cerrarFuncion(b.getTabla(), id, idleft, idright, t, new java.util.ArrayList(), pleft, pright);
+           RESULT = GeneradorTAC.funcion(t, id, new java.util.ArrayList(), b.getCodigo()); :};
+
+funcion_principal ::= VOID PRINCIPAL:id OPEN_PAREN:p CLOSE_PAREN bloque:b
+        {: GestorTablas.cerrarPrincipal(b.getTabla(), idleft, idright, pleft, pright);
+           RESULT = GeneradorTAC.principal(b.getCodigo()); :};
+
+declaracion_global ::= creacion_simple:c {: RESULT = c; :}
+    | creacion_asign:c {: RESULT = c; :}
+    | creacion_arreglo:c {: RESULT = c; :};
+
+elemento_programa ::= declaracion_global:d {: RESULT = d; :}
+    | funcion:f {: RESULT = f; :}
+    | error FIN_SENTENCIA {: RESULT = Codigo.vacio(); :}
+    | error bloque {: RESULT = Codigo.vacio(); :};
+
+elemento_programa_cm ::= elemento_programa_cm:a elemento_programa:e {: RESULT = a.agregar(e); :}
+    | {: RESULT = Codigo.vacio(); :};
+
+programa ::= elemento_programa_cm:a funcion_principal:p elemento_programa_cm:b
+        {: GestorTablas.cerrarGlobal(); RESULT = GeneradorTAC.programa(a, p, b); :};
+
+expr_retorno ::= valor_asignable:e {: RESULT = e; :};
+
+expr_modulo ::= expr_modulo:a OP_MODULO:o expr_multiplicativa:b
+        {: String ty = Semantico.binaria(a, "mod", b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, "mod", b, ty, oleft, oright); :}
+    | expr_multiplicativa:e {: RESULT = e; :};
+
+expr_multiplicativa ::= expr_multiplicativa:a OP_MULT:o expr_aditiva:b
+        {: String ty = Semantico.binaria(a, "*", b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, "*", b, ty, oleft, oright); :}
+    | expr_multiplicativa:a OP_DIV_DECIMAL:o expr_aditiva:b
+        {: String ty = Semantico.binaria(a, "/", b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, "/", b, ty, oleft, oright); :}
+    | expr_multiplicativa:a OP_DIV_ENTERA:o expr_aditiva:b
+        {: String ty = Semantico.binaria(a, "//", b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, "//", b, ty, oleft, oright); :}
+    | expr_aditiva:e {: RESULT = e; :};
+
+expr_aditiva ::= expr_aditiva:a  OP_SUMA:o expr_potencia:b
+        {: String ty = Semantico.binaria(a, "+", b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, "+", b, ty, oleft, oright); :}
+    | expr_aditiva:a  OP_RESTA:o expr_potencia:b
+        {: String ty = Semantico.binaria(a, "-", b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, "-", b, ty, oleft, oright); :}
+    | expr_potencia:e {: RESULT = e; :};
+
+expr_potencia ::= expr_negativo:a OP_POTENCIA:o expr_potencia:b
+        {: String ty = Semantico.binaria(a, "pot", b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, "pot", b, ty, oleft, oright); :}
+    | expr_negativo:e {: RESULT = e; :};
+
+expr_negativo ::= OP_RESTA:o literal_numerico:n
+        {: String ty = Semantico.unaria("-", n, oleft, oright);
+           RESULT = GeneradorTAC.unaria("-", n, ty, oleft, oright); :}
+    | expr_primaria:e {: RESULT = e; :};
+
+expr_primaria ::= literal:e {: RESULT = e; :}
+    | ID:id
+        {: // ID sin ʃ: :ʅ; con ʃ: :ʅ el parser usa acceso_arreglo
+           String ty = Semantico.valorDeVariable(id, idleft, idright);
+           RESULT = GeneradorTAC.variable(id, ty, idleft, idright); :}
+    | acceso_arreglo:e {: RESULT = e; :}
+    | llamada_funcion:e {: RESULT = e; :}
+    | expr_incremento:e {: RESULT = e; :}
+    | expr_parentesis:e {: RESULT = e; :};
+
+expr_parentesis ::= OPEN_PAREN valor_asignable:e CLOSE_PAREN {: RESULT = e; :};
+
+
+literal_numerico ::= LIT_INT:v {: RESULT = GeneradorTAC.literal(v, Semantico.literal("int"), vleft, vright); :}
+    | LIT_FLOAT:v {: RESULT = GeneradorTAC.literal(v, Semantico.literal("float"), vleft, vright); :};
+
+argumento_funcion ::= valor_asignable:e {: RESULT = e; :};
+
+lista_argumentos_funcion ::= argumento_funcion:e COMA lista_argumentos_funcion:l {: l.add(0, e); RESULT = l; :}
+    | argumento_funcion:e {: RESULT = new java.util.ArrayList(); RESULT.add(e); :};
+
+llamada_funcion ::= ID:id OPEN_PAREN lista_argumentos_funcion:l CLOSE_PAREN
+        {: String ty = Semantico.llamada(id, l, idleft, idright);
+           RESULT = GeneradorTAC.llamada(id, l, ty, idleft, idright);
+           RESULT.marcarLlamadaOIncremento(); :}
+    | ID:id OPEN_PAREN CLOSE_PAREN
+        {: java.util.ArrayList l = new java.util.ArrayList();
+           String ty = Semantico.llamada(id, l, idleft, idright);
+           RESULT = GeneradorTAC.llamada(id, l, ty, idleft, idright);
+           RESULT.marcarLlamadaOIncremento(); :};
+
+literal ::= literal_numerico:e {: RESULT = e; :}
+    | LIT_CHAR:v {: RESULT = GeneradorTAC.literal(v, Semantico.literal("char"), vleft, vright); :}
+    | LIT_STRING:v {: RESULT = GeneradorTAC.literal(v, Semantico.literal("string"), vleft, vright); :}
+    | TRUE:v {: RESULT = GeneradorTAC.literal("true", Semantico.literal("bool"), vleft, vright); :}
+    | FALSE:v {: RESULT = GeneradorTAC.literal("false", Semantico.literal("bool"), vleft, vright); :};
+
+indice ::= expr_modulo:e {: RESULT = e; :};
+
+acceso_arreglo ::= ID:id OPEN_BRACKET indice:i CLOSE_BRACKET
+        {: String ty = Semantico.acceso(id, i, idleft, idright);
+           RESULT = GeneradorTAC.acceso(id, i, ty, idleft, idright); :};
+
+valor_asignable ::= expr_modulo:e {: RESULT = e; :}
+    | expr_relacional:e {: RESULT = e; :}
+    | expr_logica:e {: RESULT = e; :};
+
+creacion_simple ::= VAL var_arreglo:v FIN_SENTENCIA
+        {: GestorTablas.declarar(v); Semantico.declaracion(v, null);
+           RESULT = GeneradorTAC.declaracion(v, null); :}
+    | VAL var_no_arreglo:v FIN_SENTENCIA
+        {: GestorTablas.declarar(v); Semantico.declaracion(v, null);
+           RESULT = GeneradorTAC.declaracion(v, null); :};
+
+creacion_asign ::= VAL var_arreglo:v ASIGN valor_asignable:e FIN_SENTENCIA
+        {: v.setInicializada(true); GestorTablas.declarar(v); Semantico.declaracion(v, e);
+           RESULT = GeneradorTAC.declaracion(v, e); :}
+    | VAL var_no_arreglo:v ASIGN valor_asignable:e FIN_SENTENCIA
+        {: v.setInicializada(true); GestorTablas.declarar(v); Semantico.declaracion(v, e);
+           RESULT = GeneradorTAC.declaracion(v, e); :};
+
+asignacion ::= ID:id ASIGN valor_asignable:e FIN_SENTENCIA
+        {: Semantico.asignacion(id, e, idleft, idright);
+           RESULT = GeneradorTAC.asignacion(id, e); :};
+
+dimension_arreglo ::= OPEN_BRACKET LIT_INT:n CLOSE_BRACKET {: RESULT = Integer.parseInt(n); :};
+
+creacion_arreglo ::= VAL var_arreglo:v dimension_arreglo:d FIN_SENTENCIA
+        {: v.setCategoria(Simbolo.Categoria.ARREGLO); v.setDimension(d); GestorTablas.declarar(v);
+           java.util.ArrayList vals = new java.util.ArrayList();
+           Semantico.creacionArreglo(v, vals);
+           RESULT = GeneradorTAC.creacionArreglo(v, vals); :}
+    | VAL var_arreglo:v dimension_arreglo:d ASIGN OPEN_LLAVES valores:vals CLOSE_LLAVES FIN_SENTENCIA
+        {: v.setCategoria(Simbolo.Categoria.ARREGLO); v.setDimension(d); v.setInicializada(true); GestorTablas.declarar(v);
+           Semantico.creacionArreglo(v, vals);
+           RESULT = GeneradorTAC.creacionArreglo(v, vals); :};
+
+asignacion_arreglo ::= acceso_arreglo:a ASIGN valor_asignable:e FIN_SENTENCIA
+        {: Semantico.asignacionArreglo(a, e, aleft, aright);
+           RESULT = GeneradorTAC.asignacionArreglo(a, e); :};
+
+valor_arreglo ::= literal_numerico:e {: RESULT = e; :}
+    | OP_RESTA:o literal_numerico:n
+        {: String ty = Semantico.unaria("-", n, oleft, oright);
+           RESULT = GeneradorTAC.unaria("-", n, ty, oleft, oright); :};
+
+valores ::= valor_arreglo:x COMA valores:l {: l.add(0, x); RESULT = l; :}
+    | valor_arreglo:x {: RESULT = new java.util.ArrayList(); RESULT.add(x); :};
+
+sentencia_expr ::= valor_asignable:e FIN_SENTENCIA
+        {: Semantico.sentenciaExpresion(e);
+           RESULT = GeneradorTAC.sentenciaExpr(e); :};
+
+expr_incremento ::= ID:id OP_INCREMENTO
+        {: String ty = Semantico.incremento(id, "++", idleft, idright);
+           RESULT = GeneradorTAC.incremento(id, "++", ty, idleft, idright);
+           RESULT.marcarLlamadaOIncremento(); :}
+    | ID:id OP_DECREMENTO
+        {: String ty = Semantico.incremento(id, "--", idleft, idright);
+           RESULT = GeneradorTAC.incremento(id, "--", ty, idleft, idright);
+           RESULT.marcarLlamadaOIncremento(); :};
+
+arg_read ::= ID:id {: RESULT = id; :};
+
+arg_write ::= literal:e {: RESULT = e; :}
+    | OP_RESTA:o literal_numerico:n
+        {: String ty = Semantico.unaria("-", n, oleft, oright);
+           RESULT = GeneradorTAC.unaria("-", n, ty, oleft, oright); :}
+    | ID:id
+        {: // ID sin ʃ: :ʅ; con ʃ: :ʅ el parser usa acceso_arreglo
+           String ty = Semantico.valorDeVariable(id, idleft, idright);
+           RESULT = GeneradorTAC.variable(id, ty, idleft, idright); :}
+    | acceso_arreglo:e {: RESULT = e; :};
+
+sent_read ::= READ OPEN_PAREN arg_read:a CLOSE_PAREN FIN_SENTENCIA
+        {: Semantico.leer(a, aleft, aright);
+           RESULT = GeneradorTAC.leer(a); :};
+
+sent_write ::= WRITE:w OPEN_PAREN arg_write:e CLOSE_PAREN FIN_SENTENCIA
+        {: Semantico.escribir(e, wleft, wright);
+           RESULT = GeneradorTAC.escribir(e); :};
+
+sent_return ::= RETURN:r expr_retorno:e FIN_SENTENCIA
+        {: Semantico.retorno(e, rleft, rright);
+           Semantico.codigoDespues("return", parser.siguienteToken());
+           RESULT = GeneradorTAC.retorno(e); :};
+
+sent_break ::= BREAK:b FIN_SENTENCIA
+        {: Semantico.romper(bleft, bright);
+           Semantico.codigoDespues("break", parser.siguienteToken());
+           RESULT = GeneradorTAC.romper(); :};
+
+sentencia_var ::= creacion_simple:c {: RESULT = c; :}
+    | creacion_asign:c {: RESULT = c; :}
+    | asignacion:c {: RESULT = c; :}
+    | creacion_arreglo:c {: RESULT = c; :}
+    | asignacion_arreglo:c {: RESULT = c; :}
+    | sentencia_expr:c {: RESULT = c; :};
+
+sentencia ::= sentencia_var:c {: RESULT = c; :}
+    | sent_return:c {: RESULT = c; :}
+    | sent_break:c {: RESULT = c; :}
+    | sent_read:c {: RESULT = c; :}
+    | sent_write:c {: RESULT = c; :}
+    | sent_if:c {: RESULT = c; :}
+    | sent_while:c {: RESULT = c; :}
+    | sent_for:c {: RESULT = c; :}
+    | bloque:b {: RESULT = b.getCodigo(); :};
+
+lista_sentencias ::= sentencia:s lista_sentencias:l {: RESULT = Codigo.vacio().agregar(s).agregar(l); :}
+    | error FIN_SENTENCIA lista_sentencias:l {: RESULT = l; :}
+    | error bloque lista_sentencias:l {: RESULT = l; :}
+    | {: RESULT = Codigo.vacio(); :};
+
+op_orden ::= OP_MAYOR {: RESULT = ">"; :}
+    | OP_MENOR {: RESULT = "<"; :}
+    | OP_MAYOR_IGUAL {: RESULT = ">="; :}
+    | OP_MENOR_IGUAL {: RESULT = "<="; :};
+
+op_igualdad ::= OP_IGUAL {: RESULT = "=="; :}
+    | OP_DIFERENTE {: RESULT = "!="; :};
+
+operando_rel ::= OPEN_BRACKET valor_asignable:e CLOSE_BRACKET {: RESULT = e; :};
+
+expr_rel_orden ::= operando_rel:a op_orden:o operando_rel:b
+        {: String ty = Semantico.binaria(a, o, b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, o, b, ty, oleft, oright); :};
+
+expr_rel_igualdad ::= operando_rel:a op_igualdad:o operando_rel:b
+        {: String ty = Semantico.binaria(a, o, b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, o, b, ty, oleft, oright); :};
+
+expr_relacional ::= expr_rel_orden:e {: RESULT = e; :}
+    | expr_rel_igualdad:e {: RESULT = e; :};
+
+op_logico ::= OP_AND {: RESULT = "λ"; :}
+    | OP_OR {: RESULT = "θ"; :};
+
+operando_logico ::= expr_parentesis:e {: RESULT = e; :}
+    | expr_negacion:e {: RESULT = e; :};
+
+expr_negacion ::= OP_NEGACION:o expr_parentesis:e
+        {: String ty = Semantico.unaria("Σ", e, oleft, oright);
+           RESULT = GeneradorTAC.unaria("Σ", e, ty, oleft, oright); :};
+
+cadena_logica ::= cadena_logica:a op_logico:o operando_logico:b
+        {: String ty = Semantico.binaria(a, o, b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, o, b, ty, oleft, oright); :}
+    | operando_logico:a op_logico:o operando_logico:b
+        {: String ty = Semantico.binaria(a, o, b, oleft, oright);
+           RESULT = GeneradorTAC.binaria(a, o, b, ty, oleft, oright); :};
+
+expr_logica ::= cadena_logica:e {: RESULT = e; :}
+    | expr_negacion:e {: RESULT = e; :};
+
+condicion ::= OPEN_PAREN valor_asignable:e CLOSE_PAREN {: Semantico.condicion(e); RESULT = e; :}
+    | OPEN_PAREN:p error CLOSE_PAREN {: RESULT = Expr.error(pleft, pright); :};
+
+sent_elif ::= ELIF:e condicion:c bloque:b
+        {: GestorTablas.nombrar(b.getTabla(), "elif", eleft, eright);
+           RESULT = new Rama(c, b.getCodigo()); :};
+
+lista_elif ::= lista_elif:l sent_elif:r {: l.add(r); RESULT = l; :}
+    | {: RESULT = new java.util.ArrayList(); :};
+
+sent_else ::= ELSE:e bloque:b
+        {: GestorTablas.nombrar(b.getTabla(), "else", eleft, eright);
+           RESULT = b.getCodigo(); :};
+
+sent_if ::= IF:i condicion:c bloque:b lista_elif:l sent_else:s
+        {: GestorTablas.nombrar(b.getTabla(), "if", ileft, iright);
+           RESULT = GeneradorTAC.si(c, b.getCodigo(), l, s); :}
+    | IF:i condicion:c bloque:b lista_elif:l
+        {: GestorTablas.nombrar(b.getTabla(), "if", ileft, iright);
+           RESULT = GeneradorTAC.si(c, b.getCodigo(), l, null); :};
+
+sent_while ::= WHILE:w condicion:c bloque:b
+        {: GestorTablas.nombrar(b.getTabla(), "while", wleft, wright);
+           RESULT = GeneradorTAC.mientras(c, b.getCodigo()); :};
+
+for_inicio ::= VAL var_arreglo:v ASIGN valor_asignable:e
+        {: v.setInicializada(true); GestorTablas.declarar(v); Semantico.declaracion(v, e);
+           RESULT = GeneradorTAC.declaracion(v, e); :}
+    | VAL var_no_arreglo:v ASIGN valor_asignable:e
+        {: v.setInicializada(true); GestorTablas.declarar(v); Semantico.declaracion(v, e);
+           RESULT = GeneradorTAC.declaracion(v, e); :}
+    | ID:id ASIGN valor_asignable:e
+        {: Semantico.asignacion(id, e, idleft, idright);
+           RESULT = GeneradorTAC.asignacion(id, e); :};
+
+for_condicion ::= valor_asignable:e {: Semantico.condicion(e); RESULT = e; :};
+
+for_actualizacion ::= expr_modulo:e
+        {: Semantico.actualizacionFor(e);
+           RESULT = GeneradorTAC.sentenciaExpr(e); :}
+    | ID:id ASIGN expr_modulo:e
+        {: Semantico.asignacion(id, e, idleft, idright);
+           RESULT = GeneradorTAC.asignacion(id, e); :};
+
+sent_for ::= FOR:f OPEN_PAREN for_inicio:i FIN_SENTENCIA for_condicion:c FIN_SENTENCIA for_actualizacion:a CLOSE_PAREN bloque:b
+        {: GestorTablas.cerrarFor(b.getTabla(), fleft, fright);
+           RESULT = GeneradorTAC.para(i, c, a, b.getCodigo()); :};
